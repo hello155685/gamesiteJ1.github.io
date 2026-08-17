@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Night Hub</title>
+    <title>Game Hub</title>
     <style>
         :root {
             --bg-color: #0f0f13;
@@ -168,6 +168,9 @@
         }
 
         .nav-item {
+            background: none;
+            border: none;
+            width: 100%;
             padding: 12px 16px;
             border-radius: 8px;
             text-decoration: none;
@@ -176,6 +179,9 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
         }
 
         .nav-item.active {
@@ -321,6 +327,83 @@
             font-size: 0.85rem;
             line-height: 1.4;
         }
+
+        /* --- FRIENDS VIEW STYLING --- */
+        .search-container {
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+        }
+
+        .friend-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .friend-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .friend-stats {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+            margin-top: 3px;
+        }
+
+        .btn-chat {
+            background-color: var(--tag-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-chat:hover {
+            border-color: var(--accent-color);
+        }
     </style>
 </head>
 <body>
@@ -343,7 +426,7 @@
             <aside class="sidebar">
                 <div>
                     <div class="sidebar-brand">
-                        🎮 Game Night Hub
+                        🎮 Game Hub
                     </div>
                     
                     <div class="user-card">
@@ -355,7 +438,8 @@
                     </div>
 
                     <nav class="nav-menu">
-                        <a href="#" class="nav-item active">🎮 Games</a>
+                        <button id="nav-games" class="nav-item active" onclick="showTab('games')">🎮 Games</button>
+                        <button id="nav-friends" class="nav-item" onclick="showTab('friends')">👥 Friends</button>
                     </nav>
                 </div>
 
@@ -367,57 +451,104 @@
 
             <!-- MAIN CONTENT AREA -->
             <main class="dashboard-content">
-                <div class="header">
-                    <h1>Welcome back 👋</h1>
-                    <p>Choose a game and start playing!</p>
-                </div>
 
-                <!-- STATS -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Games Played</div>
+                <!-- GAMES VIEW -->
+                <div id="games-view">
+                    <div class="header">
+                        <h1>Welcome back 👋</h1>
+                        <p>Choose a game and start playing!</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Wins</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Challenges</div>
-                    </div>
-                </div>
 
-                <!-- CATEGORY TAGS -->
-                <div class="filter-tags">
-                    <div class="tag active">All</div>
-                    <div class="tag">Classic</div>
-                    <div class="tag">Strategy</div>
-                    <div class="tag">Quick</div>
-                </div>
-
-                <!-- GAME CARDS -->
-                <div class="game-grid">
-                    
-                    <!-- Tic-Tac-Toe -->
-                    <a href="games/tictactoe/index.html" class="game-card">
-                        <div class="game-banner">❌⭕</div>
-                        <div class="game-info">
-                            <h2>Tic Tac Toe</h2>
-                            <p>The timeless classic — X vs O battle on a 3×3 grid.</p>
+                    <!-- STATS -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Games Played</div>
                         </div>
-                    </a>
-
-                    <!-- Pong -->
-                    <a href="games/pong/index.html" class="game-card">
-                        <div class="game-banner">🏓</div>
-                        <div class="game-info">
-                            <h2>Pong</h2>
-                            <p>Retro arcade action. Bounce the ball and score points!</p>
+                        <div class="stat-card">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Wins</div>
                         </div>
-                    </a>
+                        <div class="stat-card">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Challenges</div>
+                        </div>
+                    </div>
 
+                    <!-- CATEGORY TAGS -->
+                    <div class="filter-tags">
+                        <div class="tag active">All</div>
+                        <div class="tag">Classic</div>
+                        <div class="tag">Strategy</div>
+                        <div class="tag">Quick</div>
+                    </div>
+
+                    <!-- GAME CARDS -->
+                    <div class="game-grid">
+                        
+                        <!-- Tic-Tac-Toe -->
+                        <a href="games/tictactoe/index.html" class="game-card">
+                            <div class="game-banner">❌⭕</div>
+                            <div class="game-info">
+                                <h2>Tic Tac Toe</h2>
+                                <p>The timeless classic — X vs O battle on a 3×3 grid.</p>
+                            </div>
+                        </a>
+
+                        <!-- Pong -->
+                        <a href="games/pong/index.html" class="game-card">
+                            <div class="game-banner">🏓</div>
+                            <div class="game-info">
+                                <h2>Pong</h2>
+                                <p>Retro arcade action. Bounce the ball and score points!</p>
+                            </div>
+                        </a>
+
+                    </div>
                 </div>
+
+                <!-- FRIENDS VIEW -->
+                <div id="friends-view" style="display: none;">
+                    <div class="header">
+                        <h1>Friends</h1>
+                        <p>Connect and chat with other players</p>
+                    </div>
+
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="🔍 Search by username...">
+                    </div>
+
+                    <div class="filter-tags">
+                        <div class="tag active">Friends <span>2</span></div>
+                        <div class="tag">Requests</div>
+                        <div class="tag">Sent</div>
+                    </div>
+
+                    <div class="friends-list">
+                        <div class="friend-card">
+                            <div class="friend-info">
+                                <div class="friend-avatar">N</div>
+                                <div>
+                                    <strong>No</strong>
+                                    <div class="friend-stats">0 games • 0 wins</div>
+                                </div>
+                            </div>
+                            <button class="btn-chat">💬 Chat</button>
+                        </div>
+
+                        <div class="friend-card">
+                            <div class="friend-info">
+                                <div class="friend-avatar" style="background-color: #a29bfe;">?</div>
+                                <div>
+                                    <strong>Unknown</strong>
+                                    <div class="friend-stats">0 games • 0 wins</div>
+                                </div>
+                            </div>
+                            <button class="btn-chat">💬 Chat</button>
+                        </div>
+                    </div>
+                </div>
+
             </main>
 
         </div>
@@ -465,6 +596,26 @@
         // Toggle Light/Dark Mode
         function toggleTheme() {
             document.body.classList.toggle("light-mode");
+        }
+
+        // Switch between Games and Friends tabs
+        function showTab(tabName) {
+            const gamesView = document.getElementById("games-view");
+            const friendsView = document.getElementById("friends-view");
+            const navGames = document.getElementById("nav-games");
+            const navFriends = document.getElementById("nav-friends");
+
+            if (tabName === 'games') {
+                gamesView.style.display = "block";
+                friendsView.style.display = "none";
+                navGames.classList.add("active");
+                navFriends.classList.remove("active");
+            } else if (tabName === 'friends') {
+                gamesView.style.display = "none";
+                friendsView.style.display = "block";
+                navGames.classList.remove("active");
+                navFriends.classList.add("active");
+            }
         }
     </script>
 
