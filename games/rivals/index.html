@@ -1,1 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rivals</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
+    body {
+      background-color: #1e1e28;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    /* Top Left Back Button */
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+    }
+
+    .btn-back {
+      background-color: #353548;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #444;
+      transition: background 0.2s;
+    }
+
+    .btn-back:hover {
+      background-color: #4c6ef5;
+    }
+
+    /* Menu Container */
+    .game-container {
+      background: #2a2a38;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 450px;
+      width: 100%;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .game-icon {
+      font-size: 32px;
+    }
+
+    .menu-view {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .difficulty-group {
+      width: 100%;
+      text-align: center;
+    }
+
+    .difficulty-label {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #bbb;
+    }
+
+    .difficulty-value {
+      font-weight: bold;
+      color: #4c6ef5;
+    }
+
+    .slider {
+      width: 80%;
+      height: 8px;
+      border-radius: 5px;
+      background: #444;
+      outline: none;
+      accent-color: #4c6ef5;
+      cursor: pointer;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-play {
+      background-color: #4c6ef5;
+      color: #fff;
+    }
+
+    .btn-friend {
+      background-color: #353548;
+      color: #ccc;
+      border: 1px solid #555;
+    }
+
+    /* Active Game View */
+    .game-view {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      background-color: #111;
+      display: block;
+    }
+
+    /* Hotbar Overlay */
+    .hotbar {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .slot {
+      width: 60px;
+      height: 60px;
+      background: rgba(42, 42, 56, 0.85);
+      border: 2px solid #555;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .slot.active {
+      border-color: #4c6ef5;
+      background: rgba(76, 110, 245, 0.3);
+    }
+
+    .slot-key {
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      font-size: 10px;
+      color: #aaa;
+    }
+
+    .slot-label {
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    /* Shiftlock Overlay */
+    .shiftlock-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #888;
+      z-index: 100;
+    }
+
+    .shiftlock-indicator.active {
+      color: #4c6ef5;
+      border: 1px solid #4c6ef5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Left Back Button -->
+  <div class="top-bar">
+    <a href="https://hello155685.github.io/gamesitej1.github.io/" class="btn-back">&#8592; Back to Games</a>
+  </div>
+
+  <!-- Menu Screen -->
+  <div class="game-container" id="menu-view">
+    <div class="game-header">
+      <span class="game-icon">⚔️</span>
+      <h1>Rivals</h1>
+    </div>
+
+    <div class="menu-view">
+      <div class="difficulty-group">
+        <div class="difficulty-label">Map: <span id="map-text" class="difficulty-value">Map1</span></div>
+        <input type="range" id="map-slider" class="slider" min="0" max="2" value="0" step="1" oninput="updateMap()">
+      </div>
+
+      <div class="button-row">
+        <button class="btn btn-play" onclick="startGame()">Play</button>
+        <button class="btn btn-friend" onclick="playWithFriend()">Play with Friend</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Canvas & HUD -->
+  <div id="game-view" class="game-view">
+    <div id="shiftlock-tag" class="shiftlock-indicator">Shiftlock: OFF (Press Shift)</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Hotbar -->
+    <div class="hotbar">
+      <div class="slot active" id="slot-1" onclick="selectSlot(0)">
+        <span class="slot-key">1</span>
+        <span>🔫</span>
+        <span class="slot-label">Pistol</span>
+      </div>
+      <div class="slot" id="slot-2" onclick="selectSlot(1)">
+        <span class="slot-key">2</span>
+        <span>🩹</span>
+        <span class="slot-label">Medkit</span>
+      </div>
+      <div class="slot" id="slot-3" onclick="selectSlot(2)">
+        <span class="slot-key">3</span>
+        <span>💣</span>
+        <span class="slot-label">Grenade</span>
+      </div>
+      <div class="slot" id="slot-4" onclick="selectSlot(3)">
+        <span class="slot-key">4</span>
+        <span>⚡</span>
+        <span class="slot-label">Boost</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const maps = ["Map1", "Map2", "Map3"];
+    let selectedMap = "Map1";
+    let selectedSlot = 0;
+    let shiftlock = false;
+
+    // Obstacles/Houses for each map { x, y, width, height, type }
+    const mapObstacles = {
+      "Map1": [ // Village Map
+        { x: 200, y: 150, width: 140, height: 100, label: "House", color: "#4a3b32" },
+        { x: 500, y: 350, width: 160, height: 120, label: "Barn", color: "#5c2c2c" },
+        { x: 250, y: 450, width: 90, height: 90, label: "Shed", color: "#3d3d3d" }
+      ],
+      "Map2": [ // Forest Map
+        { x: 150, y: 100, width: 100, height: 100, label: "Cabin", color: "#3b2a1d" },
+        { x: 450, y: 200, width: 80, height: 160, label: "Ruins", color: "#2b3b2b" },
+        { x: 650, y: 400, width: 120, height: 120, label: "Bunker", color: "#1f2b1f" }
+      ],
+      "Map3": [ // Desert Map
+        { x: 300, y: 200, width: 180, height: 100, label: "Fort", color: "#6b533d" },
+        { x: 150, y: 400, width: 110, height: 110, label: "Outpost", color: "#54402e" },
+        { x: 600, y: 150, width: 90, height: 140, label: "Tower", color: "#423223" }
+      ]
+    };
+
+    function updateMap() {
+      const val = document.getElementById("map-slider").value;
+      selectedMap = maps[val];
+      document.getElementById("map-text").textContent = selectedMap;
+    }
+
+    function playWithFriend() {}
+
+    let canvas, ctx;
+    let keys = {};
+    let mouse = { x: 0, y: 0, down: false };
+
+    let player = {
+      x: 100,
+      y: 100,
+      radius: 20,
+      color: '#4c6ef5',
+      name: 'Player1',
+      health: 100,
+      maxHealth: 100,
+      angle: 0,
+      speed: 4
+    };
+
+    let bot = {
+      x: 750,
+      y: 500,
+      radius: 20,
+      color: '#fa5252',
+      name: 'EnemyBot',
+      health: 100,
+      maxHealth: 100,
+      angle: 0,
+      speed: 2
+    };
+
+    let bullets = [];
+
+    function startGame() {
+      document.getElementById("menu-view").style.display = "none";
+      document.getElementById("game-view").style.display = "block";
+
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+      resizeCanvas();
+
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+      window.addEventListener("mousemove", handleMouseMove);
+      canvas.addEventListener("mousedown", handleMouseDown);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function selectSlot(index) {
+      selectedSlot = index;
+      document.querySelectorAll(".slot").forEach((s, idx) => {
+        if (idx === index) s.classList.add("active");
+        else s.classList.remove("active");
+      });
+    }
+
+    function handleKeyDown(e) {
+      keys[e.key.toLowerCase()] = true;
+
+      if (e.key === "Shift") {
+        shiftlock = !shiftlock;
+        const tag = document.getElementById("shiftlock-tag");
+        if (shiftlock) {
+          tag.textContent = "Shiftlock: ON";
+          tag.classList.add("active");
+        } else {
+          tag.textContent = "Shiftlock: OFF (Press Shift)";
+          tag.classList.remove("active");
+        }
+      }
+
+      if (["1", "2", "3", "4"].includes(e.key)) {
+        selectSlot(parseInt(e.key) - 1);
+      }
+    }
+
+    function handleKeyUp(e) {
+      keys[e.key.toLowerCase()] = false;
+    }
+
+    function handleMouseMove(e) {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    }
+
+    function handleMouseDown() {
+      useItem();
+    }
+
+    function useItem() {
+      if (selectedSlot === 0) {
+        bullets.push({
+          x: player.x,
+          y: player.y,
+          dx: Math.cos(player.angle) * 10,
+          dy: Math.sin(player.angle) * 10,
+          owner: 'player'
+        });
+      } else if (selectedSlot === 1) {
+        player.health = Math.min(player.maxHealth, player.health + 25);
+      }
+    }
+
+    // Circle vs Rect Collision check for solid cover
+    function checkCollision(circle, rect) {
+      let closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
+      let closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+
+      let distanceX = circle.x - closestX;
+      let distanceY = circle.y - closestY;
+
+      let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+      return distanceSquared < (circle.radius * circle.radius);
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+      let obstacles = mapObstacles[selectedMap] || [];
+
+      // Calculate Player Intended Move
+      let nextX = player.x;
+      let nextY = player.y;
+
+      if (keys['w'] || keys['arrowup']) nextY -= player.speed;
+      if (keys['s'] || keys['arrowdown']) nextY += player.speed;
+      if (keys['a'] || keys['arrowleft']) nextX -= player.speed;
+      if (keys['d'] || keys['arrowright']) nextX += player.speed;
+
+      // X-axis obstacle collision
+      let collideX = false;
+      for (let obs of obstacles) {
+        if (checkCollision({ x: nextX, y: player.y, radius: player.radius }, obs)) {
+          collideX = true;
+          break;
+        }
+      }
+      if (!collideX) player.x = nextX;
+
+      // Y-axis obstacle collision
+      let collideY = false;
+      for (let obs of obstacles) {
+        if (checkCollision({ x: player.x, y: nextY, radius: player.radius }, obs)) {
+          collideY = true;
+          break;
+        }
+      }
+      if (!collideY) player.y = nextY;
+
+      // Screen bounds
+      player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+      player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+      // Aiming Angle
+      player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+
+      // Bot movement with simple collision check
+      let botAngle = Math.atan2(player.y - bot.y, player.x - bot.x);
+      bot.angle = botAngle;
+      let botNextX = bot.x + Math.cos(botAngle) * bot.speed;
+      let botNextY = bot.y + Math.sin(botAngle) * bot.speed;
+
+      let botCollide = false;
+      for (let obs of obstacles) {
+        if (checkCollision({ x: botNextX, y: botNextY, radius: bot.radius }, obs)) {
+          botCollide = true;
+          break;
+        }
+      }
+      if (!botCollide) {
+        bot.x = botNextX;
+        bot.y = botNextY;
+      }
+
+      // Bullets Update & Cover Collision
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.x += b.dx;
+        b.y += b.dy;
+
+        // Hit Obstacle/House (bullet destroyed by cover)
+        let hitHouse = false;
+        for (let obs of obstacles) {
+          if (b.x > obs.x && b.x < obs.x + obs.width && b.y > obs.y && b.y < obs.y + obs.height) {
+            hitHouse = true;
+            break;
+          }
+        }
+        if (hitHouse) {
+          bullets.splice(i, 1);
+          continue;
+        }
+
+        // Hit bot
+        let dist = Math.hypot(b.x - bot.x, b.y - bot.y);
+        if (dist < bot.radius + 5) {
+          bot.health -= 20;
+          bullets.splice(i, 1);
+          if (bot.health <= 0) {
+            bot.x = Math.random() * (canvas.width - 200) + 100;
+            bot.y = Math.random() * (canvas.height - 200) + 100;
+            bot.health = bot.maxHealth;
+          }
+          continue;
+        }
+
+        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+          bullets.splice(i, 1);
+        }
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Map Background Color
+      if (selectedMap === "Map1") ctx.fillStyle = "#2d3748";
+      else if (selectedMap === "Map2") ctx.fillStyle = "#2f3e2e";
+      else ctx.fillStyle = "#3e2e2e";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Houses/Obstacles
+      let obstacles = mapObstacles[selectedMap] || [];
+      obstacles.forEach(obs => {
+        // Main Roof / Wall
+        ctx.fillStyle = obs.color;
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+        // Border / Roof Outline
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+
+        // Label
+        ctx.fillStyle = "#fff";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(obs.label, obs.x + obs.width / 2, obs.y + obs.height / 2 + 4);
+      });
+
+      // Draw Bullets
+      ctx.fillStyle = "#ffd43b";
+      bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw Player & Bot
+      function drawCharacter(char) {
+        ctx.save();
+        ctx.translate(char.x, char.y);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(char.name, 0, -char.radius - 22);
+
+        // Healthbar
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(-25, -char.radius - 16, 50, 6);
+        ctx.fillStyle = "#51cf66";
+        ctx.fillRect(-25, -char.radius - 16, (char.health / char.maxHealth) * 50, 6);
+
+        ctx.rotate(char.angle);
+
+        ctx.fillStyle = char.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, char.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ccc";
+        ctx.fillRect(0, -3, char.radius + 10, 6);
+
+        ctx.restore();
+      }
+
+      drawCharacter(player);
+      drawCharacter(bot);
+    }
+  </script>
+</body>
+</html>
