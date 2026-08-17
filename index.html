@@ -433,14 +433,14 @@
             font-size: 1.1rem;
         }
 
-    .chat-messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto; /* Enables vertical scrolling when chat gets long */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
         .chat-msg-row {
             font-size: 0.95rem;
@@ -457,12 +457,6 @@
         .chat-msg-user {
             font-weight: bold;
             color: var(--accent-color);
-            margin-right: 6px;
-        }
-
-        .chat-msg-admin {
-            font-weight: bold;
-            color: var(--admin-accent);
             margin-right: 6px;
         }
 
@@ -641,11 +635,11 @@
 
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-number">0</div>
+                            <div class="stat-number" id="user-stat-played">0</div>
                             <div class="stat-label">Games Played</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">0</div>
+                            <div class="stat-number" id="user-stat-wins">0</div>
                             <div class="stat-label">Wins</div>
                         </div>
                         <div class="stat-card">
@@ -761,59 +755,36 @@
             <!-- ADMIN CONTENT AREA -->
             <main class="dashboard-content">
 
-       <!-- ADMIN PLAYERS VIEW -->
-<div id="admin-players-view">
-    <div class="header">
-        <h1>Player Directory</h1>
-        <p>View active online players and offline account files</p>
-    </div>
+                <!-- ADMIN PLAYERS VIEW -->
+                <div id="admin-players-view">
+                    <div class="header">
+                        <h1>Player Directory</h1>
+                        <p>View active online players and offline account files</p>
+                    </div>
 
-    <div class="admin-table-container">
-        <!-- REPLACE THE EXISTING TABLE WITH THIS ONE -->
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="admin-players-list">
-                <!-- Players populated dynamically -->
-            </tbody>
-        </table>
-    </div>
-</div>
-               <!-- ADMIN CHATS VIEW -->
-<div id="admin-chats-view" style="display: none;">
-    <div class="header">
-        <h1>Global Chat Monitor</h1>
-        <p>Live stream of global public chat messages with timestamps</p>
-    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Status</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-players-list">
+                                <!-- Players populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h3>👁️ Live Global Chat Logs</h3>
-        </div>
-        <div class="chat-messages" id="admin-chat-messages-container">
-            <!-- Admin stream of chat messages -->
-        </div>
-    </div>
-
-    <!-- PLACE THE CHAT CONTROLS HERE -->
-    <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
-        <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin..." style="flex: 1;">
-        <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
-        <button onclick="resetGlobalChat()" style="background-color: #e67e22; color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Reset Chat</button>
-    </div>
-</div>
-
-                    <!-- Dedicated Admin Quick-Chat Box -->
-<div class="chat-input-area" style="margin-top: 15px; max-width: 700px;">
-    <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin...">
-    <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
-</div>
+                <!-- ADMIN CHATS VIEW -->
+                <div id="admin-chats-view" style="display: none;">
+                    <div class="header">
+                        <h1>Global Chat Monitor</h1>
+                        <p>Live stream of global public chat messages with timestamps</p>
+                    </div>
 
                     <div class="chat-container">
                         <div class="chat-header">
@@ -822,6 +793,13 @@
                         <div class="chat-messages" id="admin-chat-messages-container">
                             <!-- Admin stream of chat messages -->
                         </div>
+                    </div>
+
+                    <!-- ADMIN CHAT CONTROLS -->
+                    <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
+                        <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin..." style="flex: 1;">
+                        <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
+                        <button onclick="resetGlobalChat()" style="background-color: #e67e22; color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Reset Chat</button>
                     </div>
                 </div>
 
@@ -900,35 +878,19 @@
             document.addEventListener(evt, resetInactivityTimer, true);
         });
 
-        function sendAdminMessage() {
-    const input = document.getElementById("admin-chat-input");
-    const text = input.value.trim();
-    if (text === "") return;
-
-    const timeString = new Date().toLocaleTimeString([], { hour12: false });
-    const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-    
-    // Sends message under the active admin account username
-    messages.push({ sender: currentUser || "jadminj1", text: text, time: timeString });
-    localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
-
-    input.value = "";
-    loadGlobalMessages();
-}
-
-       function resetInactivityTimer() {
-    if (!currentUser) return;
-    clearTimeout(inactivityTimer);
-    updateHeartbeat(currentUser);
-    
-    // Auto logout after 4 minutes (240000 ms) of inactivity
-    inactivityTimer = setTimeout(() => {
-        if (currentUser) {
-            alert("Logged out due to 4 minutes of inactivity.");
-            lockSite();
+        function resetInactivityTimer() {
+            if (!currentUser) return;
+            clearTimeout(inactivityTimer);
+            updateHeartbeat(currentUser);
+            
+            // Auto logout after 4 minutes (240000 ms) of inactivity
+            inactivityTimer = setTimeout(() => {
+                if (currentUser) {
+                    alert("Logged out due to 4 minutes of inactivity.");
+                    lockSite();
+                }
+            }, 240000);
         }
-    }, 240000); 
-}
 
         // LISTEN FOR REAL-TIME EVENTS ACROSS TABS
         window.addEventListener('storage', function(e) {
@@ -944,6 +906,8 @@
                 loadGlobalMessages();
             } else if (e.key === 'gamehub_banned_players') {
                 checkBanStatus();
+            } else if (e.key === 'gamehub_player_stats') {
+                updateUserStatsDisplay();
             }
         });
 
@@ -977,6 +941,10 @@
 
             document.getElementById("global-chat-input").addEventListener("keypress", (e) => {
                 if (e.key === "Enter") sendGlobalMessage();
+            });
+
+            document.getElementById("admin-chat-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") sendAdminMessage();
             });
         });
 
@@ -1024,7 +992,6 @@
             let changed = false;
 
             for (let player in activeSessions) {
-                // If no activity in last 10 seconds, clear active session status
                 if (now - activeSessions[player] > 10000) {
                     delete activeSessions[player];
                     changed = true;
@@ -1045,65 +1012,6 @@
             delete activeSessions[username];
             localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
         }
-
-function changePlayerData(targetUser) {
-    const adminPass = prompt(`Enter admin password (jadminj1) to edit stats for ${targetUser}:`);
-    
-    if (adminPass !== "jadminj1") {
-        alert("Incorrect admin password! Action canceled.");
-        return;
-    }
-
-    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-    let currentStats = playerStats[targetUser] || { played: 0, wins: 0 };
-
-    const newPlayed = prompt(`Enter new 'Games Played' count for ${targetUser}:`, currentStats.played);
-    if (newPlayed === null) return;
-
-    const newWins = prompt(`Enter new 'Wins' count for ${targetUser}:`, currentStats.wins);
-    if (newWins === null) return;
-
-    playerStats[targetUser] = {
-        played: parseInt(newPlayed, 10) || 0,
-        wins: parseInt(newWins, 10) || 0
-    };
-
-    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-    alert(`Updated stats live for ${targetUser}!`);
-    loadAdminData();
-}
-
-function removePlayerData(targetUser) {
-    const adminPass = prompt(`Enter admin password (jadminj1) to REMOVE ALL DATA for ${targetUser}:`);
-
-    if (adminPass !== "jadminj1") {
-        alert("Incorrect admin password! Action canceled.");
-        return;
-    }
-
-    if (!confirm(`Are you sure you want to permanently delete data for ${targetUser}?`)) {
-        return;
-    }
-
-    // Remove from directory
-    let players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
-    players = players.filter(p => p !== targetUser);
-    localStorage.setItem("gamehub_all_players", JSON.stringify(players));
-
-    // Remove friends data
-    localStorage.removeItem("gamehub_friends_" + targetUser);
-
-    // Remove stats
-    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-    delete playerStats[targetUser];
-    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-
-    // Kick player if currently logged in
-    kickPlayer(targetUser);
-
-    alert(`All data for ${targetUser} has been removed.`);
-    loadAdminData();
-}
 
         function checkPassword() {
             const userVal = document.getElementById("username-input").value.trim();
@@ -1148,8 +1056,21 @@ function removePlayerData(targetUser) {
                 document.getElementById("welcome-username").innerText = currentUser;
                 document.getElementById("display-avatar").innerText = currentUser.charAt(0);
 
+                updateUserStatsDisplay();
                 loadFriendsList();
             }
+        }
+
+        function updateUserStatsDisplay() {
+            if (!currentUser) return;
+            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+            const stats = playerStats[currentUser] || { played: 0, wins: 0 };
+            
+            const playedEl = document.getElementById("user-stat-played");
+            const winsEl = document.getElementById("user-stat-wins");
+
+            if (playedEl) playedEl.innerText = stats.played;
+            if (winsEl) winsEl.innerText = stats.wins;
         }
 
         function registerUserInDirectory(username) {
@@ -1214,73 +1135,127 @@ function removePlayerData(targetUser) {
             }
         }
 
-function loadAdminData() {
-    cleanExpiredBans();
-    cleanExpiredSessions();
-    const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
-    const playersTable = document.getElementById("admin-players-list");
-    const statsTable = document.getElementById("admin-stats-list");
-    const actionTable = document.getElementById("admin-action-list");
+        function loadAdminData() {
+            cleanExpiredBans();
+            cleanExpiredSessions();
+            const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
+            const playersTable = document.getElementById("admin-players-list");
+            const statsTable = document.getElementById("admin-stats-list");
+            const actionTable = document.getElementById("admin-action-list");
 
-    playersTable.innerHTML = "";
-    statsTable.innerHTML = "";
-    actionTable.innerHTML = "";
+            playersTable.innerHTML = "";
+            statsTable.innerHTML = "";
+            actionTable.innerHTML = "";
 
-    const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
-    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
+            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
 
-    players.forEach(player => {
-        const isOnline = isUserActive(player);
-        const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
-        const isBanned = isUserBanned(player);
-        const isMuted = mutedPlayers.includes(player);
-        
-        const currentStats = playerStats[player] || { played: 0, wins: 0 };
+            players.forEach(player => {
+                const isOnline = isUserActive(player);
+                const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
+                const isBanned = isUserBanned(player);
+                const isMuted = mutedPlayers.includes(player);
+                
+                const currentStats = playerStats[player] || { played: 0, wins: 0 };
 
-        // Players Row with Change Player and Remove Data Buttons
-        const pRow = document.createElement("tr");
-        pRow.innerHTML = `
-            <td><strong>${player}</strong></td>
-            <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
-            <td>${isAdmin ? 'Admin' : 'Player'}</td>
-            <td>
-                <div class="action-btns">
-                    <button class="btn-act" style="background-color: #3498db;" onclick="changePlayerData('${player}')">Change Player</button>
-                    <button class="btn-act" style="background-color: #c0392b;" onclick="removePlayerData('${player}')">Remove Data</button>
-                </div>
-            </td>
-        `;
-        playersTable.appendChild(pRow);
+                // Players Row
+                const pRow = document.createElement("tr");
+                pRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
+                    <td>${isAdmin ? 'Admin' : 'Player'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-act" style="background-color: #3498db;" onclick="changePlayerData('${player}')">Change Player</button>
+                            <button class="btn-act" style="background-color: #c0392b;" onclick="removePlayerData('${player}')">Remove Data</button>
+                        </div>
+                    </td>
+                `;
+                playersTable.appendChild(pRow);
 
-        // Stats Row
-        const sRow = document.createElement("tr");
-        sRow.innerHTML = `
-            <td><strong>${player}</strong></td>
-            <td>${currentStats.played}</td>
-            <td>${currentStats.wins}</td>
-        `;
-        statsTable.appendChild(sRow);
+                // Stats Row
+                const sRow = document.createElement("tr");
+                sRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td>${currentStats.played}</td>
+                    <td>${currentStats.wins}</td>
+                `;
+                statsTable.appendChild(sRow);
 
-        // Action Row
-        const aRow = document.createElement("tr");
-        aRow.innerHTML = `
-            <td><strong>${player}</strong></td>
-            <td>${isAdmin ? 'Admin' : 'Member'}</td>
-            <td>
-                <div class="action-btns">
-                    <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
-                    <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
-                    <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
-                </div>
-            </td>
-        `;
-        actionTable.appendChild(aRow);
-    });
-}
+                // Action Row
+                const aRow = document.createElement("tr");
+                aRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td>${isAdmin ? 'Admin' : 'Member'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
+                            <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
+                            <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
+                        </div>
+                    </td>
+                `;
+                actionTable.appendChild(aRow);
+            });
+        }
+
+        function changePlayerData(targetUser) {
+            const adminPass = prompt(`Enter admin password (jadminj1) to edit stats for ${targetUser}:`);
+            
+            if (adminPass !== "jadminj1") {
+                alert("Incorrect admin password! Action canceled.");
+                return;
+            }
+
+            let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+            let currentStats = playerStats[targetUser] || { played: 0, wins: 0 };
+
+            const newPlayed = prompt(`Enter new 'Games Played' count for ${targetUser}:`, currentStats.played);
+            if (newPlayed === null) return;
+
+            const newWins = prompt(`Enter new 'Wins' count for ${targetUser}:`, currentStats.wins);
+            if (newWins === null) return;
+
+            playerStats[targetUser] = {
+                played: parseInt(newPlayed, 10) || 0,
+                wins: parseInt(newWins, 10) || 0
+            };
+
+            localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
+            alert(`Updated stats live for ${targetUser}!`);
+            loadAdminData();
+        }
+
+        function removePlayerData(targetUser) {
+            const adminPass = prompt(`Enter admin password (jadminj1) to REMOVE ALL DATA for ${targetUser}:`);
+
+            if (adminPass !== "jadminj1") {
+                alert("Incorrect admin password! Action canceled.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to permanently delete data for ${targetUser}?`)) {
+                return;
+            }
+
+            let players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
+            players = players.filter(p => p !== targetUser);
+            localStorage.setItem("gamehub_all_players", JSON.stringify(players));
+
+            localStorage.removeItem("gamehub_friends_" + targetUser);
+
+            let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+            delete playerStats[targetUser];
+            localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
+
+            kickPlayer(targetUser);
+
+            alert(`All data for ${targetUser} has been removed.`);
+            loadAdminData();
+        }
 
         function kickPlayer(targetUser) {
             removeActiveUser(targetUser);
-            // Send trigger object with timestamp to guarantee storage listener fires across all tabs
             localStorage.setItem("gamehub_kicked_signal", JSON.stringify({ user: targetUser, time: Date.now() }));
             
             if (targetUser === currentUser) {
@@ -1297,7 +1272,6 @@ function loadAdminData() {
             if (bans[targetUser]) {
                 delete bans[targetUser];
             } else {
-                // Ban for 3 minutes (180,000 ms)
                 bans[targetUser] = Date.now() + 180000;
                 kickPlayer(targetUser);
             }
@@ -1338,34 +1312,6 @@ function loadAdminData() {
             searchInput.value = "";
         }
 
-function resetGlobalChat() {
-    const currentChat = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-    
-    if (currentChat.length === 0) {
-        alert("Chat is already empty.");
-        return;
-    }
-
-    if (!confirm("Are you sure you want to reset global chat? This archives messages for Admin logs and clears the public lounge.")) {
-        return;
-    }
-
-    // Save current chat history into an archived logs array with date & time
-    const archivedLogs = JSON.parse(localStorage.getItem("gamehub_archived_chat_logs")) || [];
-    const archiveEntry = {
-        archivedAt: new Date().toLocaleString(),
-        messages: currentChat
-    };
-    archivedLogs.push(archiveEntry);
-    localStorage.setItem("gamehub_archived_chat_logs", JSON.stringify(archivedLogs));
-
-    // Clear public live chat
-    localStorage.setItem("gamehub_global_chat", JSON.stringify([]));
-
-    alert("Global chat reset and saved to archive logs!");
-    loadGlobalMessages();
-}
-
         function loadFriendsList() {
             const container = document.getElementById("friends-list-container");
             const countLabel = document.getElementById("friend-count");
@@ -1379,7 +1325,10 @@ function resetGlobalChat() {
                 return;
             }
 
+            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
             friends.forEach(friend => {
+                const stats = playerStats[friend] || { played: 0, wins: 0 };
                 const card = document.createElement("div");
                 card.className = "friend-card";
                 card.innerHTML = `
@@ -1387,7 +1336,7 @@ function resetGlobalChat() {
                         <div class="friend-avatar">${friend.charAt(0)}</div>
                         <div>
                             <strong>${friend}</strong>
-                            <div class="friend-stats">0 games • 0 wins</div>
+                            <div class="friend-stats">${stats.played} games • ${stats.wins} wins</div>
                         </div>
                     </div>
                 `;
@@ -1395,36 +1344,35 @@ function resetGlobalChat() {
             });
         }
 
-       // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS & ADMIN STYLING
-function loadGlobalMessages() {
-    const userContainer = document.getElementById("global-chat-messages-container");
-    const adminContainer = document.getElementById("admin-chat-messages-container");
-    const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+        // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS
+        function loadGlobalMessages() {
+            const userContainer = document.getElementById("global-chat-messages-container");
+            const adminContainer = document.getElementById("admin-chat-messages-container");
+            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
 
-    let userHtml = "";
-    let adminHtml = "";
+            let userHtml = "";
+            let adminHtml = "";
 
-    messages.forEach(msg => {
-        const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
-        
-        // Admin styling: Red color and "[Admin]" tag
-        const senderLabel = isAdmin 
-            ? `<span style="color: #ff4757; font-weight: bold;">[Admin] ${msg.sender}:</span>` 
-            : `<span class="chat-msg-user">${msg.sender}:</span>`;
+            messages.forEach(msg => {
+                const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
+                
+                const senderLabel = isAdmin 
+                    ? `<span style="color: #ff4757; font-weight: bold;">[Admin] ${msg.sender}:</span>` 
+                    : `<span class="chat-msg-user">${msg.sender}:</span>`;
 
-        userHtml += `<div class="chat-msg-row">${senderLabel} ${msg.text}</div>`;
-        adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span> ${senderLabel} ${msg.text}</div>`;
-    });
+                userHtml += `<div class="chat-msg-row">${senderLabel} ${msg.text}</div>`;
+                adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span> ${senderLabel} ${msg.text}</div>`;
+            });
 
-    if (userContainer) {
-        userContainer.innerHTML = userHtml;
-        userContainer.scrollTop = userContainer.scrollHeight;
-    }
-    if (adminContainer) {
-        adminContainer.innerHTML = adminHtml;
-        adminContainer.scrollTop = adminContainer.scrollHeight;
-    }
-}
+            if (userContainer) {
+                userContainer.innerHTML = userHtml;
+                userContainer.scrollTop = userContainer.scrollHeight;
+            }
+            if (adminContainer) {
+                adminContainer.innerHTML = adminHtml;
+                adminContainer.scrollTop = adminContainer.scrollHeight;
+            }
+        }
 
         function sendGlobalMessage() {
             const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
@@ -1444,6 +1392,47 @@ function loadGlobalMessages() {
             localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
 
             input.value = "";
+            loadGlobalMessages();
+        }
+
+        function sendAdminMessage() {
+            const input = document.getElementById("admin-chat-input");
+            const text = input.value.trim();
+            if (text === "") return;
+
+            const timeString = new Date().toLocaleTimeString([], { hour12: false });
+            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+            
+            messages.push({ sender: currentUser || "jadminj1", text: text, time: timeString });
+            localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
+
+            input.value = "";
+            loadGlobalMessages();
+        }
+
+        function resetGlobalChat() {
+            const currentChat = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+            
+            if (currentChat.length === 0) {
+                alert("Chat is already empty.");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to reset global chat? This archives messages for Admin logs and clears the public lounge.")) {
+                return;
+            }
+
+            const archivedLogs = JSON.parse(localStorage.getItem("gamehub_archived_chat_logs")) || [];
+            const archiveEntry = {
+                archivedAt: new Date().toLocaleString(),
+                messages: currentChat
+            };
+            archivedLogs.push(archiveEntry);
+            localStorage.setItem("gamehub_archived_chat_logs", JSON.stringify(archivedLogs));
+
+            localStorage.setItem("gamehub_global_chat", JSON.stringify([]));
+
+            alert("Global chat reset and saved to archive logs!");
             loadGlobalMessages();
         }
     </script>
