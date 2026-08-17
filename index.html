@@ -16,6 +16,10 @@
             --accent-hover: #5849c4;
             --tag-bg: #252533;
             --admin-accent: #ff4757;
+            --btn-kick: #e67e22;
+            --btn-ban: #e74c3c;
+            --btn-unban: #2ecc71;
+            --btn-mute: #f1c40f;
         }
 
         body.light-mode {
@@ -511,14 +515,18 @@
         }
 
         /* ADMIN TABLES & LISTS */
+        .admin-table-container {
+            max-width: 900px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--card-bg);
+        }
+
         .admin-table {
             width: 100%;
-            max-width: 800px;
             border-collapse: collapse;
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
         }
 
         .admin-table th, .admin-table td {
@@ -528,10 +536,13 @@
         }
 
         .admin-table th {
+            position: sticky;
+            top: 0;
             background-color: var(--tag-bg);
             color: var(--subtext-color);
             font-size: 0.85rem;
             text-transform: uppercase;
+            z-index: 10;
         }
 
         .status-badge {
@@ -550,6 +561,49 @@
         .status-offline {
             background-color: rgba(255, 255, 255, 0.1);
             color: var(--subtext-color);
+        }
+
+        /* ADMIN ACTION BUTTONS */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-act {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #fff;
+            transition: opacity 0.2s;
+        }
+
+        .btn-act:hover {
+            opacity: 0.85;
+        }
+
+        .btn-act-kick {
+            background-color: var(--btn-kick);
+        }
+
+        .btn-act-ban {
+            background-color: var(--btn-ban);
+        }
+
+        .btn-act-unban {
+            background-color: var(--btn-unban);
+        }
+
+        .btn-act-mute {
+            background-color: var(--btn-mute);
+            color: #000;
+        }
+
+        .btn-act-muted {
+            background-color: #7f8c8d;
+            color: #fff;
         }
     </style>
 </head>
@@ -701,7 +755,7 @@
                     <div class="user-card" style="border: 1px solid var(--admin-accent);">
                         <div class="user-avatar" style="background-color: var(--admin-accent);">A</div>
                         <div>
-                            <strong>Administrator</strong>
+                            <strong>jadminj1</strong>
                             <div style="font-size: 0.75rem; color: var(--admin-accent);">● Admin Root</div>
                         </div>
                     </div>
@@ -730,18 +784,20 @@
                         <p>View active online players and offline account files</p>
                     </div>
 
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Status</th>
-                                <th>Role</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-players-list">
-                            <!-- Players populated dynamically -->
-                        </tbody>
-                    </table>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Status</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-players-list">
+                                <!-- Players populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- ADMIN CHATS VIEW -->
@@ -759,25 +815,42 @@
                         <p>Overview of wins and games played across all registered users</p>
                     </div>
 
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Player</th>
-                                <th>Games Played</th>
-                                <th>Wins</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-stats-list">
-                            <!-- Stats populated dynamically -->
-                        </tbody>
-                    </table>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Games Played</th>
+                                    <th>Wins</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-stats-list">
+                                <!-- Stats populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- ADMIN ACTION VIEW -->
                 <div id="admin-action-view" style="display: none;">
                     <div class="header">
                         <h1>Admin Actions</h1>
-                        <p>System controls and management (Coming Soon)</p>
+                        <p>Perform management actions (Kick, Ban, Mute) on registered players</p>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Rank</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-action-list">
+                                <!-- Action player rows dynamically loaded -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -789,7 +862,7 @@
     <!-- JAVASCRIPT -->
     <script>
         const ALLOWED_PASSWORDS = ["1test1", "secret123", "admin123"];
-        const ADMIN_USERNAMES = ["admin", "Administrator"];
+        const ADMIN_USERNAMES = ["jadminj1"];
         let currentUser = "";
         let currentChatFriend = "";
 
@@ -900,19 +973,27 @@
             const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
             const playersTable = document.getElementById("admin-players-list");
             const statsTable = document.getElementById("admin-stats-list");
+            const actionTable = document.getElementById("admin-action-list");
 
             playersTable.innerHTML = "";
             statsTable.innerHTML = "";
+            actionTable.innerHTML = "";
+
+            const bannedPlayers = JSON.parse(localStorage.getItem("gamehub_banned_players")) || [];
+            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
 
             players.forEach(player => {
                 const isOnline = player === currentUser;
+                const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
+                const isBanned = bannedPlayers.includes(player);
+                const isMuted = mutedPlayers.includes(player);
                 
                 // Players Row
                 const pRow = document.createElement("tr");
                 pRow.innerHTML = `
                     <td><strong>${player}</strong></td>
                     <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
-                    <td>${ADMIN_USERNAMES.includes(player.toLowerCase()) ? 'Admin' : 'Player'}</td>
+                    <td>${isAdmin ? 'Admin' : 'Player'}</td>
                 `;
                 playersTable.appendChild(pRow);
 
@@ -924,7 +1005,58 @@
                     <td>0</td>
                 `;
                 statsTable.appendChild(sRow);
+
+                // Action Row
+                const aRow = document.createElement("tr");
+                aRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td>${isAdmin ? 'Admin' : 'Member'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
+                            <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
+                            <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
+                        </div>
+                    </td>
+                `;
+                actionTable.appendChild(aRow);
             });
+        }
+
+        // ADMIN ACTION FUNCTIONS
+        function kickPlayer(targetUser) {
+            if (targetUser === currentUser) {
+                lockSite();
+            } else {
+                let activeUser = localStorage.getItem("gamehub_username");
+                if (activeUser === targetUser) {
+                    localStorage.removeItem("gamehub_username");
+                }
+                alert(`Player ${targetUser} has been kicked to the login screen.`);
+                loadAdminData();
+            }
+        }
+
+        function toggleBan(targetUser) {
+            let bannedPlayers = JSON.parse(localStorage.getItem("gamehub_banned_players")) || [];
+            if (bannedPlayers.includes(targetUser)) {
+                bannedPlayers = bannedPlayers.filter(p => p !== targetUser);
+            } else {
+                bannedPlayers.push(targetUser);
+            }
+            localStorage.setItem("gamehub_banned_players", JSON.stringify(bannedPlayers));
+            loadAdminData();
+        }
+
+        function toggleMute(targetUser) {
+            let mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
+            if (mutedPlayers.includes(targetUser)) {
+                mutedPlayers = mutedPlayers.filter(p => p !== targetUser);
+            } else {
+                mutedPlayers.push(targetUser);
+            }
+            localStorage.setItem("gamehub_muted_players", JSON.stringify(mutedPlayers));
+            loadAdminData();
         }
 
         // FRIENDS MANAGEMENT
@@ -1010,6 +1142,12 @@
         }
 
         function sendMessage() {
+            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
+            if (mutedPlayers.includes(currentUser)) {
+                alert("You are muted by an admin and cannot send messages.");
+                return;
+            }
+
             const input = document.getElementById("chat-message-input");
             const text = input.value.trim();
             if (text === "") return;
