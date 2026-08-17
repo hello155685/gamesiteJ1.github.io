@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #1e1e28;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Top Left Back Button */
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .btn-back {
+      background-color: #353548;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #444;
+      transition: background 0.2s;
+    }
+
+    .btn-back:hover {
+      background-color: #4c6ef5;
+    }
+
+    /* Container */
+    .game-container {
+      background: #2a2a38;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .game-icon {
+      font-size: 32px;
+    }
+
+    /* Menu / Setup View */
+    .menu-view {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .difficulty-group {
+      width: 100%;
+      text-align: center;
+    }
+
+    .difficulty-label {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #bbb;
+    }
+
+    .difficulty-value {
+      font-weight: bold;
+      color: #4c6ef5;
+    }
+
+    .slider {
+      width: 80%;
+      height: 8px;
+      border-radius: 5px;
+      background: #444;
+      outline: none;
+      accent-color: #4c6ef5;
+      cursor: pointer;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-play {
+      background-color: #4c6ef5;
+      color: #fff;
+    }
+
+    .btn-friend {
+      background-color: #353548;
+      color: #ccc;
+      border: 1px solid #555;
+    }
+
+    /* Active Game View */
+    .game-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .status-text {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 270px;
+      height: 270px;
+    }
+
+    .cell {
+      background: #353548;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .cell:hover {
+      background: #44445a;
+    }
+
+    .cell.x {
+      color: #4c6ef5;
+    }
+
+    .cell.o {
+      color: #fa5252;
+    }
+
+    .btn-restart {
+      background-color: #fa5252;
+      color: #fff;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Left Back Button -->
+  <div class="top-bar">
+    <a href="https://hello155685.github.io/gamesitej1.github.io/" class="btn-back">&#8592; Back to Games</a>
+  </div>
+
+  <div class="game-container">
+    <div class="game-header">
+      <span class="game-icon">❌⭕</span>
+      <h1>Tic Tac Toe</h1>
+    </div>
+
+    <!-- Menu & Settings Screen -->
+    <div id="menu-view" class="menu-view">
+      <div class="difficulty-group">
+        <div class="difficulty-label">Difficulty: <span id="difficulty-text" class="difficulty-value">Easy</span></div>
+        <input type="range" id="difficulty-slider" class="slider" min="0" max="2" value="0" step="1" oninput="updateDifficulty()">
+      </div>
+
+      <div class="button-row">
+        <button class="btn btn-play" onclick="startGame()">Play</button>
+        <button class="btn btn-friend" onclick="playWithFriend()">Play with Friend</button>
+      </div>
+    </div>
+
+    <!-- Gameplay Screen -->
+    <div id="game-view" class="game-view">
+      <div id="status-text" class="status-text">Your turn (X)</div>
+      <div class="board" id="board">
+        <div class="cell" onclick="handleCellClick(0)"></div>
+        <div class="cell" onclick="handleCellClick(1)"></div>
+        <div class="cell" onclick="handleCellClick(2)"></div>
+        <div class="cell" onclick="handleCellClick(3)"></div>
+        <div class="cell" onclick="handleCellClick(4)"></div>
+        <div class="cell" onclick="handleCellClick(5)"></div>
+        <div class="cell" onclick="handleCellClick(6)"></div>
+        <div class="cell" onclick="handleCellClick(7)"></div>
+        <div class="cell" onclick="handleCellClick(8)"></div>
+      </div>
+      <button id="restart-btn" class="btn btn-restart" onclick="resetBoard()">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const difficulties = ["Easy", "Normal", "Hard"];
+    let currentDifficulty = "Easy";
+    let boardState = ["", "", "", "", "", "", "", "", ""];
+    let gameActive = false;
+    let human = "X";
+    let ai = "O";
+
+    // Difficulty Slider Control
+    function updateDifficulty() {
+      const sliderVal = document.getElementById("difficulty-slider").value;
+      currentDifficulty = difficulties[sliderVal];
+      document.getElementById("difficulty-text").textContent = currentDifficulty;
+    }
+
+    // Play with Friend (Placeholders for future implementation)
+    function playWithFriend() {
+      // Intentionally empty for now as requested
+    }
+
+    // Start Singleplayer Game
+    function startGame() {
+      document.getElementById("menu-view").style.display = "none";
+      document.getElementById("game-view").style.display = "flex";
+      resetBoard();
+    }
+
+    function resetBoard() {
+      boardState = ["", "", "", "", "", "", "", "", ""];
+      gameActive = true;
+      document.getElementById("status-text").textContent = "Your turn (X)";
+      document.getElementById("restart-btn").style.display = "none";
+
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach(cell => {
+        cell.textContent = "";
+        cell.classList.remove("x", "o");
+      });
+    }
+
+    // Handle Human Move
+    function handleCellClick(index) {
+      if (!gameActive || boardState[index] !== "") return;
+
+      makeMove(index, human);
+
+      if (checkWin(human)) {
+        document.getElementById("status-text").textContent = "You Win! 🎉";
+        endGame();
+        return;
+      }
+
+      if (boardState.every(cell => cell !== "")) {
+        document.getElementById("status-text").textContent = "It's a Tie! 🤝";
+        endGame();
+        return;
+      }
+
+      // AI Turn
+      gameActive = false;
+      document.getElementById("status-text").textContent = "Bot thinking...";
+      setTimeout(() => {
+        let aiMove = getAIMove();
+        makeMove(aiMove, ai);
+
+        if (checkWin(ai)) {
+          document.getElementById("status-text").textContent = "Bot Wins! 🤖";
+          endGame();
+          return;
+        }
+
+        if (boardState.every(cell => cell !== "")) {
+          document.getElementById("status-text").textContent = "It's a Tie! 🤝";
+          endGame();
+          return;
+        }
+
+        gameActive = true;
+        document.getElementById("status-text").textContent = "Your turn (X)";
+      }, 500);
+    }
+
+    function makeMove(index, player) {
+      boardState[index] = player;
+      const cell = document.querySelectorAll(".cell")[index];
+      cell.textContent = player;
+      cell.classList.add(player.toLowerCase());
+    }
+
+    function endGame() {
+      gameActive = false;
+      document.getElementById("restart-btn").style.display = "block";
+    }
+
+    // Bot AI Decision
+    function getAIMove() {
+      const emptyIndices = boardState
+        .map((val, idx) => (val === "" ? idx : null))
+        .filter(val => val !== null);
+
+      if (currentDifficulty === "Easy") {
+        return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      }
+
+      if (currentDifficulty === "Normal") {
+        // 50% chance optimal, 50% random
+        if (Math.random() > 0.5) {
+          return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+        }
+      }
+
+      // Hard AI logic (Block opponent or Win)
+      // 1. Can AI win right now?
+      for (let i of emptyIndices) {
+        boardState[i] = ai;
+        if (checkWin(ai)) {
+          boardState[i] = "";
+          return i;
+        }
+        boardState[i] = "";
+      }
+
+      // 2. Can player win next turn? Block them
+      for (let i of emptyIndices) {
+        boardState[i] = human;
+        if (checkWin(human)) {
+          boardState[i] = "";
+          return i;
+        }
+        boardState[i] = "";
+      }
+
+      // 3. Pick center if open
+      if (boardState[4] === "") return 4;
+
+      // 4. Fallback random
+      return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+    }
+
+    function checkWin(player) {
+      const winCombos = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      return winCombos.some(combo => combo.every(idx => boardState[idx] === player));
+    }
+  </script>
+</body>
+</html>
