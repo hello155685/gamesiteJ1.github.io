@@ -857,7 +857,7 @@
     <!-- JAVASCRIPT -->
     <script>
         const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
-        const ADMIN_USERNAMES = ["jadminj1"];
+        const ADMIN_USERNAMES = ["jadminj1", "JaByPaSs];
         let currentUser = "";
         let inactivityTimer = null;
 
@@ -948,11 +948,14 @@
             });
         });
 
-        function isUserBanned(username) {
-            cleanExpiredBans();
-            const bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
-            return !!bans[username];
-        }
+function isUserBanned(username) {
+    if (ADMIN_USERNAMES.includes(username.toLowerCase())) {
+        return false; // Admins can never be banned
+    }
+    cleanExpiredBans();
+    const bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
+    return !!bans[username];
+}
 
         function cleanExpiredBans() {
             let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
@@ -1135,70 +1138,71 @@
             }
         }
 
-        function loadAdminData() {
-            cleanExpiredBans();
-            cleanExpiredSessions();
-            const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
-            const playersTable = document.getElementById("admin-players-list");
-            const statsTable = document.getElementById("admin-stats-list");
-            const actionTable = document.getElementById("admin-action-list");
+       function loadAdminData() {
+    cleanExpiredBans();
+    cleanExpiredSessions();
+    const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
+    const playersTable = document.getElementById("admin-players-list");
+    const statsTable = document.getElementById("admin-stats-list");
+    const actionTable = document.getElementById("admin-action-list");
 
-            playersTable.innerHTML = "";
-            statsTable.innerHTML = "";
-            actionTable.innerHTML = "";
+    playersTable.innerHTML = "";
+    statsTable.innerHTML = "";
+    actionTable.innerHTML = "";
 
-            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
-            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+    const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
+    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
 
-            players.forEach(player => {
-                const isOnline = isUserActive(player);
-                const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
-                const isBanned = isUserBanned(player);
-                const isMuted = mutedPlayers.includes(player);
-                
-                const currentStats = playerStats[player] || { played: 0, wins: 0 };
+    players.forEach(player => {
+        const isOnline = isUserActive(player);
+        const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
+        const isBanned = isUserBanned(player);
+        const isMuted = mutedPlayers.includes(player);
+        
+        const currentStats = playerStats[player] || { played: 0, wins: 0 };
 
-                // Players Row
-                const pRow = document.createElement("tr");
-                pRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
-                    <td>${isAdmin ? 'Admin' : 'Player'}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-act" style="background-color: #3498db;" onclick="changePlayerData('${player}')">Change Player</button>
-                            <button class="btn-act" style="background-color: #c0392b;" onclick="removePlayerData('${player}')">Remove Data</button>
-                        </div>
-                    </td>
-                `;
-                playersTable.appendChild(pRow);
+        // Players Row
+        const pRow = document.createElement("tr");
+        pRow.innerHTML = `
+            <td><strong>${player}</strong></td>
+            <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
+            <td>${isAdmin ? 'Admin' : 'Player'}</td>
+            <td>
+                <div class="action-btns">
+                    <button class="btn-act" style="background-color: #3498db;" onclick="changePlayerData('${player}')">Change Player</button>
+                    <button class="btn-act" style="background-color: #c0392b;" onclick="removePlayerData('${player}')">Remove Data</button>
+                </div>
+            </td>
+        `;
+        playersTable.appendChild(pRow);
 
-                // Stats Row
-                const sRow = document.createElement("tr");
-                sRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td>${currentStats.played}</td>
-                    <td>${currentStats.wins}</td>
-                `;
-                statsTable.appendChild(sRow);
+        // Stats Row
+        const sRow = document.createElement("tr");
+        sRow.innerHTML = `
+            <td><strong>${player}</strong></td>
+            <td>${currentStats.played}</td>
+            <td>${currentStats.wins}</td>
+        `;
+        statsTable.appendChild(sRow);
 
-                // Action Row
-                const aRow = document.createElement("tr");
-                aRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td>${isAdmin ? 'Admin' : 'Member'}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
-                            <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
-                            <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
-                        </div>
-                    </td>
-                `;
-                actionTable.appendChild(aRow);
-            });
-        }
+        // Action Row with Admin Protection
+        const actionButtons = isAdmin 
+            ? `<span style="color: var(--subtext-color); font-size: 0.85rem; font-style: italic;">Protected Admin</span>`
+            : `<div class="action-btns">
+                <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
+                <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
+                <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
+               </div>`;
 
+        const aRow = document.createElement("tr");
+        aRow.innerHTML = `
+            <td><strong>${player}</strong></td>
+            <td>${isAdmin ? 'Admin' : 'Member'}</td>
+            <td>${actionButtons}</td>
+        `;
+        actionTable.appendChild(aRow);
+    });
+}
         function changePlayerData(targetUser) {
             const adminPass = prompt(`Enter admin password (jadminj1) to edit stats for ${targetUser}:`);
             
@@ -1267,18 +1271,23 @@
             loadAdminData();
         }
 
-        function toggleBan(targetUser) {
-            let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
-            if (bans[targetUser]) {
-                delete bans[targetUser];
-            } else {
-                bans[targetUser] = Date.now() + 180000;
-                kickPlayer(targetUser);
-            }
-            localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
-            localStorage.setItem("gamehub_banned_players", JSON.stringify(Object.keys(bans)));
-            loadAdminData();
-        }
+       function toggleBan(targetUser) {
+    if (ADMIN_USERNAMES.includes(targetUser.toLowerCase())) {
+        alert("Admin accounts cannot be banned!");
+        return;
+    }
+
+    let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
+    if (bans[targetUser]) {
+        delete bans[targetUser];
+    } else {
+        bans[targetUser] = Date.now() + 180000;
+        kickPlayer(targetUser);
+    }
+    localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
+    localStorage.setItem("gamehub_banned_players", JSON.stringify(Object.keys(bans)));
+    loadAdminData();
+}
 
         function toggleMute(targetUser) {
             let mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
