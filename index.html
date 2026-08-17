@@ -1032,6 +1032,22 @@
         </div>
     </div>
 
+        <!-- Toast Container for Notifications -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Private Chat Window -->
+<div id="private-chat" class="chat-window hidden">
+  <div class="chat-header">
+    <span id="chat-target-name">Chatting with...</span>
+    <button class="btn-close" onclick="closePrivateChat()">&times;</button>
+  </div>
+  <div id="chat-messages" class="chat-messages"></div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="handleChatInput(event)">
+    <button class="btn-chat" onclick="sendPrivateMessage()">Send</button>
+  </div>
+</div>
+
     <!-- JAVASCRIPT -->
     <script>
         const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
@@ -1894,22 +1910,6 @@
     }, 500);
   }
 </script>
-
-    <!-- Toast Container for Notifications -->
-<div id="toast-container" class="toast-container"></div>
-
-<!-- Private Chat Window -->
-<div id="private-chat" class="chat-window hidden">
-  <div class="chat-header">
-    <span id="chat-target-name">Chatting with...</span>
-    <button class="btn-close" onclick="closePrivateChat()">&times;</button>
-  </div>
-  <div id="chat-messages" class="chat-messages"></div>
-  <div class="chat-input-row">
-    <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="handleChatInput(event)">
-    <button class="btn-chat" onclick="sendPrivateMessage()">Send</button>
-  </div>
-</div>
 
 </body>
 </html>
