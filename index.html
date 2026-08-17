@@ -15,6 +15,7 @@
             --accent-color: #6c5ce7;
             --accent-hover: #5849c4;
             --tag-bg: #252533;
+            --admin-accent: #ff4757;
         }
 
         body.light-mode {
@@ -27,6 +28,7 @@
             --accent-color: #6c5ce7;
             --accent-hover: #5849c4;
             --tag-bg: #f0f1f7;
+            --admin-accent: #ff4757;
         }
 
         * {
@@ -106,8 +108,8 @@
             display: none;
         }
 
-        /* MAIN LAYOUT */
-        #main-content {
+        /* MAIN LAYOUTS */
+        #main-content, #admin-content {
             display: none;
             width: 100%;
             min-height: 100vh;
@@ -186,6 +188,10 @@
         .nav-item.active {
             background-color: var(--accent-color);
             color: #ffffff;
+        }
+
+        .admin-nav .nav-item.active {
+            background-color: var(--admin-accent);
         }
 
         .sidebar-bottom {
@@ -503,6 +509,48 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        /* ADMIN TABLES & LISTS */
+        .admin-table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-table th {
+            background-color: var(--tag-bg);
+            color: var(--subtext-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background-color: rgba(0, 255, 204, 0.15);
+            color: #00ffcc;
+        }
+
+        .status-offline {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--subtext-color);
+        }
     </style>
 </head>
 <body>
@@ -518,11 +566,11 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- MAIN USER DASHBOARD -->
     <div id="main-content">
         <div class="app-container">
             
-            <!-- SIDEBAR -->
+            <!-- USER SIDEBAR -->
             <aside class="sidebar">
                 <div>
                     <div class="sidebar-brand">🎮 Game Hub</div>
@@ -547,7 +595,7 @@
                 </div>
             </aside>
 
-            <!-- DASHBOARD CONTENT -->
+            <!-- USER DASHBOARD CONTENT -->
             <main class="dashboard-content">
 
                 <!-- GAMES VIEW -->
@@ -641,9 +689,107 @@
         </div>
     </div>
 
+    <!-- ADMIN PANEL DASHBOARD -->
+    <div id="admin-content">
+        <div class="app-container">
+            
+            <!-- ADMIN SIDEBAR -->
+            <aside class="sidebar">
+                <div>
+                    <div class="sidebar-brand" style="color: var(--admin-accent);">🛡️ Admin Panel</div>
+                    
+                    <div class="user-card" style="border: 1px solid var(--admin-accent);">
+                        <div class="user-avatar" style="background-color: var(--admin-accent);">A</div>
+                        <div>
+                            <strong>Administrator</strong>
+                            <div style="font-size: 0.75rem; color: var(--admin-accent);">● Admin Root</div>
+                        </div>
+                    </div>
+
+                    <nav class="nav-menu admin-nav">
+                        <button id="admin-nav-players" class="nav-item active" onclick="showAdminTab('players')">👤 Players</button>
+                        <button id="admin-nav-chats" class="nav-item" onclick="showAdminTab('chats')">💬 Chats</button>
+                        <button id="admin-nav-stats" class="nav-item" onclick="showAdminTab('stats')">📊 Stats</button>
+                        <button id="admin-nav-action" class="nav-item" onclick="showAdminTab('action')">⚡ Action</button>
+                    </nav>
+                </div>
+
+                <div class="sidebar-bottom">
+                    <button class="btn-sidebar" onclick="toggleTheme()">☀️ / 🌙 Toggle Theme</button>
+                    <button class="btn-sidebar" onclick="lockSite()">🔒 Exit Admin</button>
+                </div>
+            </aside>
+
+            <!-- ADMIN CONTENT AREA -->
+            <main class="dashboard-content">
+
+                <!-- ADMIN PLAYERS VIEW -->
+                <div id="admin-players-view">
+                    <div class="header">
+                        <h1>Player Directory</h1>
+                        <p>View active online players and offline account files</p>
+                    </div>
+
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-players-list">
+                            <!-- Players populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ADMIN CHATS VIEW -->
+                <div id="admin-chats-view" style="display: none;">
+                    <div class="header">
+                        <h1>Chat Logs</h1>
+                        <p>Chat monitoring system (Coming Soon)</p>
+                    </div>
+                </div>
+
+                <!-- ADMIN STATS VIEW -->
+                <div id="admin-stats-view" style="display: none;">
+                    <div class="header">
+                        <h1>Global Player Stats</h1>
+                        <p>Overview of wins and games played across all registered users</p>
+                    </div>
+
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Games Played</th>
+                                <th>Wins</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-stats-list">
+                            <!-- Stats populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ADMIN ACTION VIEW -->
+                <div id="admin-action-view" style="display: none;">
+                    <div class="header">
+                        <h1>Admin Actions</h1>
+                        <p>System controls and management (Coming Soon)</p>
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+    </div>
+
     <!-- JAVASCRIPT -->
     <script>
-        const ALLOWED_PASSWORDS = ["1test1", "secret123"];
+        const ALLOWED_PASSWORDS = ["1test1", "secret123", "admin123"];
+        const ADMIN_USERNAMES = ["admin", "Administrator"];
         let currentUser = "";
         let currentChatFriend = "";
 
@@ -681,22 +827,43 @@
                 currentUser = userVal;
                 localStorage.setItem("gamehub_username", currentUser);
 
-                // Update UI Profile
-                document.getElementById("display-username").innerText = currentUser;
-                document.getElementById("welcome-username").innerText = currentUser;
-                document.getElementById("display-avatar").innerText = currentUser.charAt(0);
+                // Register user in directory
+                registerUserInDirectory(currentUser);
 
                 document.getElementById("lock-screen").style.display = "none";
-                document.getElementById("main-content").style.display = "block";
 
-                loadFriendsList();
+                // Check for Admin Login
+                if (ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
+                    document.getElementById("admin-content").style.display = "block";
+                    document.getElementById("main-content").style.display = "none";
+                    loadAdminData();
+                } else {
+                    document.getElementById("main-content").style.display = "block";
+                    document.getElementById("admin-content").style.display = "none";
+
+                    // Update UI Profile
+                    document.getElementById("display-username").innerText = currentUser;
+                    document.getElementById("welcome-username").innerText = currentUser;
+                    document.getElementById("display-avatar").innerText = currentUser.charAt(0);
+
+                    loadFriendsList();
+                }
             } else {
                 errorMsg.style.display = "block";
             }
         }
 
+        function registerUserInDirectory(username) {
+            let directory = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
+            if (!directory.includes(username)) {
+                directory.push(username);
+                localStorage.setItem("gamehub_all_players", JSON.stringify(directory));
+            }
+        }
+
         function lockSite() {
             document.getElementById("main-content").style.display = "none";
+            document.getElementById("admin-content").style.display = "none";
             document.getElementById("lock-screen").style.display = "flex";
             document.getElementById("password-input").value = "";
             document.getElementById("error-msg").style.display = "none";
@@ -706,7 +873,7 @@
             document.body.classList.toggle("light-mode");
         }
 
-        // TAB SWITCHING
+        // USER TAB SWITCHING
         function showTab(tabName) {
             document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
             document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
@@ -714,6 +881,50 @@
 
             document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
             document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
+        }
+
+        // ADMIN TAB SWITCHING
+        function showAdminTab(tabName) {
+            document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
+            document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
+            document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
+            document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
+
+            document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
+            document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
+            document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
+            document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+        }
+
+        function loadAdminData() {
+            const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
+            const playersTable = document.getElementById("admin-players-list");
+            const statsTable = document.getElementById("admin-stats-list");
+
+            playersTable.innerHTML = "";
+            statsTable.innerHTML = "";
+
+            players.forEach(player => {
+                const isOnline = player === currentUser;
+                
+                // Players Row
+                const pRow = document.createElement("tr");
+                pRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
+                    <td>${ADMIN_USERNAMES.includes(player.toLowerCase()) ? 'Admin' : 'Player'}</td>
+                `;
+                playersTable.appendChild(pRow);
+
+                // Stats Row
+                const sRow = document.createElement("tr");
+                sRow.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td>0</td>
+                    <td>0</td>
+                `;
+                statsTable.appendChild(sRow);
+            });
         }
 
         // FRIENDS MANAGEMENT
@@ -731,6 +942,7 @@
             if (!friends.includes(name)) {
                 friends.push(name);
                 localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(friends));
+                registerUserInDirectory(name);
                 loadFriendsList();
             }
             searchInput.value = "";
