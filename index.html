@@ -178,9 +178,10 @@
 
     <!-- JAVASCRIPT LOGIC -->
 <script>
-    const CORRECT_PASSWORD = "scrt";
+    // List all allowed passwords here
+    const ALLOWED_PASSWORDS = ["1test1", "secret123", "arcade2026", "friends-only"];
 
-    // Disable the right-click menu across the entire page
+    // Disable the right-click menu
     document.addEventListener('contextmenu', function(event) {
         event.preventDefault();
     });
@@ -198,7 +199,8 @@
         const lockScreen = document.getElementById("lock-screen");
         const mainContent = document.getElementById("main-content");
 
-        if (input === CORRECT_PASSWORD) {
+        // .includes() checks if the typed password is in your list
+        if (ALLOWED_PASSWORDS.includes(input)) {
             lockScreen.style.display = "none";
             mainContent.style.display = "block";
         } else {
