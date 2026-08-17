@@ -17,7 +17,6 @@
             --tag-bg: #252533;
         }
 
-        /* Light Mode Variables */
         body.light-mode {
             --bg-color: #f4f5f9;
             --sidebar-bg: #ffffff;
@@ -45,7 +44,7 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- LOCK SCREEN --- */
+        /* LOCK SCREEN */
         #lock-screen {
             position: fixed;
             top: 0;
@@ -77,12 +76,12 @@
         .lock-container input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border-radius: 6px;
             border: 1px solid #333;
             background-color: #0f0f13;
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
             text-align: center;
             outline: none;
         }
@@ -97,6 +96,7 @@
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
+            margin-top: 5px;
         }
 
         #error-msg {
@@ -106,9 +106,9 @@
             display: none;
         }
 
-        /* --- MAIN LAYOUT --- */
+        /* MAIN LAYOUT */
         #main-content {
-            display: none; /* Hidden until password entered */
+            display: none;
             width: 100%;
             min-height: 100vh;
         }
@@ -119,7 +119,7 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR --- */
+        /* SIDEBAR */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-bg);
@@ -133,9 +133,6 @@
         .sidebar-brand {
             font-size: 1.2rem;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             margin-bottom: 30px;
         }
 
@@ -150,8 +147,8 @@
         }
 
         .user-avatar {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background-color: var(--accent-color);
             color: white;
@@ -159,6 +156,8 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            font-size: 1.1rem;
+            text-transform: uppercase;
         }
 
         .nav-menu {
@@ -214,7 +213,7 @@
             background-color: var(--tag-bg);
         }
 
-        /* --- DASHBOARD CONTENT --- */
+        /* MAIN CONTENT AREA */
         .dashboard-content {
             flex: 1;
             padding: 40px;
@@ -230,7 +229,7 @@
             margin-bottom: 30px;
         }
 
-        /* Stats Section */
+        /* STATS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -257,7 +256,7 @@
             font-size: 0.85rem;
         }
 
-        /* Filter Tags */
+        /* FILTER TAGS */
         .filter-tags {
             display: flex;
             gap: 10px;
@@ -272,7 +271,6 @@
             border-radius: 20px;
             font-size: 0.9rem;
             cursor: pointer;
-            border: 1px solid transparent;
         }
 
         .tag.active {
@@ -280,7 +278,7 @@
             color: white;
         }
 
-        /* Game Grid */
+        /* GAME GRID */
         .game-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -328,14 +326,16 @@
             line-height: 1.4;
         }
 
-        /* --- FRIENDS VIEW STYLING --- */
-        .search-container {
+        /* FRIENDS & SEARCH */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
             margin-bottom: 25px;
         }
 
         .search-input {
-            width: 100%;
-            max-width: 600px;
+            flex: 1;
             padding: 12px 18px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
@@ -345,8 +345,14 @@
             outline: none;
         }
 
-        .search-input:focus {
-            border-color: var(--accent-color);
+        .btn-add-friend {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .friends-list {
@@ -383,6 +389,7 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.1rem;
+            text-transform: uppercase;
         }
 
         .friend-stats {
@@ -404,35 +411,126 @@
         .btn-chat:hover {
             border-color: var(--accent-color);
         }
+
+        /* LIVE CHAT INTERFACE */
+        .chat-container {
+            max-width: 650px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: var(--tag-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .btn-back {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--subtext-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background-color: var(--tag-bg);
+            color: var(--text-color);
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .chat-input-area button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <!-- LOCK SCREEN -->
+    <!-- LOCK SCREEN / LOGIN -->
     <div id="lock-screen">
         <div class="lock-container">
-            <h2>Enter Password</h2>
+            <h2>Enter Game Hub</h2>
+            <input type="text" id="username-input" placeholder="Choose Username...">
             <input type="password" id="password-input" placeholder="Password...">
             <button onclick="checkPassword()">Enter Hub</button>
-            <p id="error-msg">Incorrect password!</p>
+            <p id="error-msg">Incorrect password or missing username!</p>
         </div>
     </div>
 
-    <!-- MAIN APP DASHBOARD -->
+    <!-- MAIN DASHBOARD -->
     <div id="main-content">
         <div class="app-container">
             
             <!-- SIDEBAR -->
             <aside class="sidebar">
                 <div>
-                    <div class="sidebar-brand">
-                        🎮 Game Hub
-                    </div>
+                    <div class="sidebar-brand">🎮 Game Hub</div>
                     
                     <div class="user-card">
-                        <div class="user-avatar">P</div>
+                        <div class="user-avatar" id="display-avatar">P</div>
                         <div>
-                            <strong>Player</strong>
+                            <strong id="display-username">Player</strong>
                             <div style="font-size: 0.75rem; color: #00ffcc;">● Online</div>
                         </div>
                     </div>
@@ -449,17 +547,16 @@
                 </div>
             </aside>
 
-            <!-- MAIN CONTENT AREA -->
+            <!-- DASHBOARD CONTENT -->
             <main class="dashboard-content">
 
                 <!-- GAMES VIEW -->
                 <div id="games-view">
                     <div class="header">
-                        <h1>Welcome back 👋</h1>
+                        <h1>Welcome back, <span id="welcome-username">Player</span> 👋</h1>
                         <p>Choose a game and start playing!</p>
                     </div>
 
-                    <!-- STATS -->
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-number">0</div>
@@ -475,7 +572,6 @@
                         </div>
                     </div>
 
-                    <!-- CATEGORY TAGS -->
                     <div class="filter-tags">
                         <div class="tag active">All</div>
                         <div class="tag">Classic</div>
@@ -483,10 +579,7 @@
                         <div class="tag">Quick</div>
                     </div>
 
-                    <!-- GAME CARDS -->
                     <div class="game-grid">
-                        
-                        <!-- Tic-Tac-Toe -->
                         <a href="games/tictactoe/index.html" class="game-card">
                             <div class="game-banner">❌⭕</div>
                             <div class="game-info">
@@ -495,7 +588,6 @@
                             </div>
                         </a>
 
-                        <!-- Pong -->
                         <a href="games/pong/index.html" class="game-card">
                             <div class="game-banner">🏓</div>
                             <div class="game-info">
@@ -503,7 +595,6 @@
                                 <p>Retro arcade action. Bounce the ball and score points!</p>
                             </div>
                         </a>
-
                     </div>
                 </div>
 
@@ -511,40 +602,36 @@
                 <div id="friends-view" style="display: none;">
                     <div class="header">
                         <h1>Friends</h1>
-                        <p>Connect and chat with other players</p>
+                        <p>Search and add players to your list</p>
                     </div>
 
-                    <div class="search-container">
-                        <input type="text" class="search-input" placeholder="🔍 Search by username...">
+                    <div class="search-box">
+                        <input type="text" id="friend-search-input" class="search-input" placeholder="🔍 Search or add username...">
+                        <button class="btn-add-friend" onclick="addFriendFromSearch()">Add</button>
                     </div>
 
                     <div class="filter-tags">
-                        <div class="tag active">Friends <span>2</span></div>
-                        <div class="tag">Requests</div>
-                        <div class="tag">Sent</div>
+                        <div class="tag active">Friends (<span id="friend-count">0</span>)</div>
                     </div>
 
-                    <div class="friends-list">
-                        <div class="friend-card">
-                            <div class="friend-info">
-                                <div class="friend-avatar">N</div>
-                                <div>
-                                    <strong>No</strong>
-                                    <div class="friend-stats">0 games • 0 wins</div>
-                                </div>
-                            </div>
-                            <button class="btn-chat">💬 Chat</button>
-                        </div>
+                    <div class="friends-list" id="friends-list-container">
+                        <!-- Friend cards load here dynamically -->
+                    </div>
+                </div>
 
-                        <div class="friend-card">
-                            <div class="friend-info">
-                                <div class="friend-avatar" style="background-color: #a29bfe;">?</div>
-                                <div>
-                                    <strong>Unknown</strong>
-                                    <div class="friend-stats">0 games • 0 wins</div>
-                                </div>
-                            </div>
-                            <button class="btn-chat">💬 Chat</button>
+                <!-- LIVE CHAT VIEW -->
+                <div id="chat-view" style="display: none;">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3 id="chat-friend-name">Chatting with...</h3>
+                            <button class="btn-back" onclick="showTab('friends')">← Back to Friends</button>
+                        </div>
+                        <div class="chat-messages" id="chat-messages-container">
+                            <!-- Messages appear here -->
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-message-input" placeholder="Type a message...">
+                            <button onclick="sendMessage()">Send</button>
                         </div>
                     </div>
                 </div>
@@ -557,35 +644,57 @@
     <!-- JAVASCRIPT -->
     <script>
         const ALLOWED_PASSWORDS = ["1test1", "secret123"];
+        let currentUser = "";
+        let currentChatFriend = "";
 
         // Disable Right Click
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
 
-        // Press 'Enter' key to login
-        document.getElementById("password-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkPassword();
+        // Initialize on Load
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedUser = localStorage.getItem("gamehub_username");
+            if (savedUser) {
+                document.getElementById("username-input").value = savedUser;
             }
+
+            document.getElementById("password-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") checkPassword();
+            });
+
+            document.getElementById("friend-search-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") addFriendFromSearch();
+            });
+
+            document.getElementById("chat-message-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") sendMessage();
+            });
         });
 
         function checkPassword() {
-            const input = document.getElementById("password-input").value;
+            const userVal = document.getElementById("username-input").value.trim();
+            const passVal = document.getElementById("password-input").value;
             const errorMsg = document.getElementById("error-msg");
-            const lockScreen = document.getElementById("lock-screen");
-            const mainContent = document.getElementById("main-content");
 
-            if (ALLOWED_PASSWORDS.includes(input)) {
-                lockScreen.style.display = "none";
-                mainContent.style.display = "block";
+            if (userVal !== "" && ALLOWED_PASSWORDS.includes(passVal)) {
+                currentUser = userVal;
+                localStorage.setItem("gamehub_username", currentUser);
+
+                // Update UI Profile
+                document.getElementById("display-username").innerText = currentUser;
+                document.getElementById("welcome-username").innerText = currentUser;
+                document.getElementById("display-avatar").innerText = currentUser.charAt(0);
+
+                document.getElementById("lock-screen").style.display = "none";
+                document.getElementById("main-content").style.display = "block";
+
+                loadFriendsList();
             } else {
                 errorMsg.style.display = "block";
-                document.getElementById("password-input").value = "";
             }
         }
 
-        // Lock Site Button Function
         function lockSite() {
             document.getElementById("main-content").style.display = "none";
             document.getElementById("lock-screen").style.display = "flex";
@@ -593,29 +702,114 @@
             document.getElementById("error-msg").style.display = "none";
         }
 
-        // Toggle Light/Dark Mode
         function toggleTheme() {
             document.body.classList.toggle("light-mode");
         }
 
-        // Switch between Games and Friends tabs
+        // TAB SWITCHING
         function showTab(tabName) {
-            const gamesView = document.getElementById("games-view");
-            const friendsView = document.getElementById("friends-view");
-            const navGames = document.getElementById("nav-games");
-            const navFriends = document.getElementById("nav-friends");
+            document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
+            document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
+            document.getElementById("chat-view").style.display = "none";
 
-            if (tabName === 'games') {
-                gamesView.style.display = "block";
-                friendsView.style.display = "none";
-                navGames.classList.add("active");
-                navFriends.classList.remove("active");
-            } else if (tabName === 'friends') {
-                gamesView.style.display = "none";
-                friendsView.style.display = "block";
-                navGames.classList.remove("active");
-                navFriends.classList.add("active");
+            document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
+            document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
+        }
+
+        // FRIENDS MANAGEMENT
+        function getSavedFriends() {
+            return JSON.parse(localStorage.getItem("gamehub_friends_" + currentUser)) || [];
+        }
+
+        function addFriendFromSearch() {
+            const searchInput = document.getElementById("friend-search-input");
+            const name = searchInput.value.trim();
+
+            if (name === "" || name === currentUser) return;
+
+            let friends = getSavedFriends();
+            if (!friends.includes(name)) {
+                friends.push(name);
+                localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(friends));
+                loadFriendsList();
             }
+            searchInput.value = "";
+        }
+
+        function loadFriendsList() {
+            const container = document.getElementById("friends-list-container");
+            const countLabel = document.getElementById("friend-count");
+            const friends = getSavedFriends();
+
+            container.innerHTML = "";
+            countLabel.innerText = friends.length;
+
+            if (friends.length === 0) {
+                container.innerHTML = "<p style='color: var(--subtext-color);'>No friends added yet. Type a name above to add!</p>";
+                return;
+            }
+
+            friends.forEach(friend => {
+                const card = document.createElement("div");
+                card.className = "friend-card";
+                card.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-avatar">${friend.charAt(0)}</div>
+                        <div>
+                            <strong>${friend}</strong>
+                            <div class="friend-stats">0 games • 0 wins</div>
+                        </div>
+                    </div>
+                    <button class="btn-chat" onclick="openChat('${friend}')">💬 Chat</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // LIVE CHAT SYSTEM
+        function openChat(friendName) {
+            currentChatFriend = friendName;
+            document.getElementById("chat-friend-name").innerText = "Chatting with " + friendName;
+            
+            document.getElementById("games-view").style.display = "none";
+            document.getElementById("friends-view").style.display = "none";
+            document.getElementById("chat-view").style.display = "block";
+
+            loadMessages();
+        }
+
+        function getChatKey() {
+            return "chat_" + [currentUser, currentChatFriend].sort().join("_");
+        }
+
+        function loadMessages() {
+            const container = document.getElementById("chat-messages-container");
+            const messages = JSON.parse(localStorage.getItem(getChatKey())) || [];
+            container.innerHTML = "";
+
+            messages.forEach(msg => {
+                const msgDiv = document.createElement("div");
+                msgDiv.className = "message " + (msg.sender === currentUser ? "sent" : "received");
+                msgDiv.innerText = msg.text;
+                container.appendChild(msgDiv);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("chat-message-input");
+            const text = input.value.trim();
+            if (text === "") return;
+
+            const chatKey = getChatKey();
+            const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+            
+            messages.push({ sender: currentUser, text: text });
+            localStorage.setItem(chatKey, JSON.stringify(messages));
+
+            input.value = "";
+            loadMessages();
         }
     </script>
 
