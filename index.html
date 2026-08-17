@@ -424,13 +424,13 @@
 
         /* LIVE CHAT INTERFACE */
         .chat-container {
-            max-width: 650px;
+            max-width: 700px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
-            height: 500px;
+            height: 520px;
             overflow: hidden;
         }
 
@@ -447,44 +447,31 @@
             font-size: 1.1rem;
         }
 
-        .btn-back {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--subtext-color);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
         .chat-messages {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .message {
-            max-width: 75%;
-            padding: 10px 14px;
-            border-radius: 12px;
+        .chat-msg-row {
             font-size: 0.95rem;
+            line-height: 1.4;
             word-wrap: break-word;
         }
 
-        .message.sent {
-            align-self: flex-end;
-            background-color: var(--accent-color);
-            color: #ffffff;
-            border-bottom-right-radius: 2px;
+        .chat-msg-user {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-right: 6px;
         }
 
-        .message.received {
-            align-self: flex-start;
-            background-color: var(--tag-bg);
-            color: var(--text-color);
-            border-bottom-left-radius: 2px;
+        .chat-msg-admin {
+            font-weight: bold;
+            color: var(--admin-accent);
+            margin-right: 6px;
         }
 
         .chat-input-area {
@@ -640,6 +627,7 @@
                     <nav class="nav-menu">
                         <button id="nav-games" class="nav-item active" onclick="showTab('games')">🎮 Games</button>
                         <button id="nav-friends" class="nav-item" onclick="showTab('friends')">👥 Friends</button>
+                        <button id="nav-global-chat" class="nav-item" onclick="showTab('global-chat')">💬 Global Chat</button>
                     </nav>
                 </div>
 
@@ -721,19 +709,23 @@
                     </div>
                 </div>
 
-                <!-- LIVE CHAT VIEW -->
-                <div id="chat-view" style="display: none;">
+                <!-- GLOBAL CHAT ROOM VIEW -->
+                <div id="global-chat-view" style="display: none;">
+                    <div class="header">
+                        <h1>Global Chat Room</h1>
+                        <p>Public live feed — Chat with everyone online!</p>
+                    </div>
+
                     <div class="chat-container">
                         <div class="chat-header">
-                            <h3 id="chat-friend-name">Chatting with...</h3>
-                            <button class="btn-back" onclick="showTab('friends')">← Back to Friends</button>
+                            <h3>🌐 #public-lounge</h3>
                         </div>
-                        <div class="chat-messages" id="chat-messages-container">
-                            <!-- Messages appear here -->
+                        <div class="chat-messages" id="global-chat-messages-container">
+                            <!-- Live messages stream here -->
                         </div>
                         <div class="chat-input-area">
-                            <input type="text" id="chat-message-input" placeholder="Type a message...">
-                            <button onclick="sendMessage()">Send</button>
+                            <input type="text" id="global-chat-input" placeholder="Say something in global chat...">
+                            <button onclick="sendGlobalMessage()">Send</button>
                         </div>
                     </div>
                 </div>
@@ -803,8 +795,17 @@
                 <!-- ADMIN CHATS VIEW -->
                 <div id="admin-chats-view" style="display: none;">
                     <div class="header">
-                        <h1>Chat Logs</h1>
-                        <p>Chat monitoring system (Coming Soon)</p>
+                        <h1>Global Chat Monitor</h1>
+                        <p>Live stream of global public chat messages</p>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3>👁️ Live Global Chat Logs</h3>
+                        </div>
+                        <div class="chat-messages" id="admin-chat-messages-container">
+                            <!-- Admin stream of chat messages -->
+                        </div>
                     </div>
                 </div>
 
@@ -864,11 +865,23 @@
         const ALLOWED_PASSWORDS = ["1test1", "secret123", "admin123"];
         const ADMIN_USERNAMES = ["jadminj1"];
         let currentUser = "";
-        let currentChatFriend = "";
 
         // Disable Right Click
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
+        });
+
+        // LISTEN FOR REAL-TIME KICKS AND MESSAGES ACROSS TABS
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'gamehub_kicked_signal') {
+                const kickedUser = e.newValue;
+                if (kickedUser === currentUser) {
+                    alert("You have been kicked by an administrator.");
+                    lockSite();
+                }
+            } else if (e.key === 'gamehub_global_chat') {
+                loadGlobalMessages();
+            }
         });
 
         // Initialize on Load
@@ -886,8 +899,8 @@
                 if (e.key === "Enter") addFriendFromSearch();
             });
 
-            document.getElementById("chat-message-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") sendMessage();
+            document.getElementById("global-chat-input").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") sendGlobalMessage();
             });
         });
 
@@ -900,12 +913,10 @@
                 currentUser = userVal;
                 localStorage.setItem("gamehub_username", currentUser);
 
-                // Register user in directory
                 registerUserInDirectory(currentUser);
 
                 document.getElementById("lock-screen").style.display = "none";
 
-                // Check for Admin Login
                 if (ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
                     document.getElementById("admin-content").style.display = "block";
                     document.getElementById("main-content").style.display = "none";
@@ -914,7 +925,6 @@
                     document.getElementById("main-content").style.display = "block";
                     document.getElementById("admin-content").style.display = "none";
 
-                    // Update UI Profile
                     document.getElementById("display-username").innerText = currentUser;
                     document.getElementById("welcome-username").innerText = currentUser;
                     document.getElementById("display-avatar").innerText = currentUser.charAt(0);
@@ -950,10 +960,15 @@
         function showTab(tabName) {
             document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
             document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
-            document.getElementById("chat-view").style.display = "none";
+            document.getElementById("global-chat-view").style.display = tabName === 'global-chat' ? "block" : "none";
 
             document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
             document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
+            document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
+
+            if (tabName === 'global-chat') {
+                loadGlobalMessages();
+            }
         }
 
         // ADMIN TAB SWITCHING
@@ -967,6 +982,10 @@
             document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
             document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
             document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+
+            if (tabName === 'chats') {
+                loadGlobalMessages();
+            }
         }
 
         function loadAdminData() {
@@ -1023,17 +1042,13 @@
             });
         }
 
-        // ADMIN ACTION FUNCTIONS
+        // REAL-TIME ADMIN KICK FUNCTION
         function kickPlayer(targetUser) {
+            localStorage.setItem("gamehub_kicked_signal", targetUser);
             if (targetUser === currentUser) {
                 lockSite();
             } else {
-                let activeUser = localStorage.getItem("gamehub_username");
-                if (activeUser === targetUser) {
-                    localStorage.removeItem("gamehub_username");
-                }
-                alert(`Player ${targetUser} has been kicked to the login screen.`);
-                loadAdminData();
+                alert(`Kick signal sent for ${targetUser}.`);
             }
         }
 
@@ -1104,62 +1119,52 @@
                             <div class="friend-stats">0 games • 0 wins</div>
                         </div>
                     </div>
-                    <button class="btn-chat" onclick="openChat('${friend}')">💬 Chat</button>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // LIVE CHAT SYSTEM
-        function openChat(friendName) {
-            currentChatFriend = friendName;
-            document.getElementById("chat-friend-name").innerText = "Chatting with " + friendName;
-            
-            document.getElementById("games-view").style.display = "none";
-            document.getElementById("friends-view").style.display = "none";
-            document.getElementById("chat-view").style.display = "block";
+        // GLOBAL CHAT ROOM SYSTEM (ROBLOX STYLE)
+        function loadGlobalMessages() {
+            const userContainer = document.getElementById("global-chat-messages-container");
+            const adminContainer = document.getElementById("admin-chat-messages-container");
+            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
 
-            loadMessages();
-        }
-
-        function getChatKey() {
-            return "chat_" + [currentUser, currentChatFriend].sort().join("_");
-        }
-
-        function loadMessages() {
-            const container = document.getElementById("chat-messages-container");
-            const messages = JSON.parse(localStorage.getItem(getChatKey())) || [];
-            container.innerHTML = "";
-
+            let htmlContent = "";
             messages.forEach(msg => {
-                const msgDiv = document.createElement("div");
-                msgDiv.className = "message " + (msg.sender === currentUser ? "sent" : "received");
-                msgDiv.innerText = msg.text;
-                container.appendChild(msgDiv);
+                const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
+                const userClass = isAdmin ? "chat-msg-admin" : "chat-msg-user";
+                htmlContent += `<div class="chat-msg-row"><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
             });
 
-            container.scrollTop = container.scrollHeight;
+            if (userContainer) {
+                userContainer.innerHTML = htmlContent;
+                userContainer.scrollTop = userContainer.scrollHeight;
+            }
+            if (adminContainer) {
+                adminContainer.innerHTML = htmlContent;
+                adminContainer.scrollTop = adminContainer.scrollHeight;
+            }
         }
 
-        function sendMessage() {
+        function sendGlobalMessage() {
             const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
             if (mutedPlayers.includes(currentUser)) {
                 alert("You are muted by an admin and cannot send messages.");
                 return;
             }
 
-            const input = document.getElementById("chat-message-input");
+            const input = document.getElementById("global-chat-input");
             const text = input.value.trim();
             if (text === "") return;
 
-            const chatKey = getChatKey();
-            const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
-            
+            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
             messages.push({ sender: currentUser, text: text });
-            localStorage.setItem(chatKey, JSON.stringify(messages));
+
+            localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
 
             input.value = "";
-            loadMessages();
+            loadGlobalMessages();
         }
     </script>
 
