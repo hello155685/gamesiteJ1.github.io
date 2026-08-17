@@ -3,53 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hub</title>
+    <title>Arcade Game Hub</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-            padding: 20px;
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f0f13;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        /* Lock Screen Overlay */
+        #lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d11;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .lock-container {
+            background-color: #1a1a24;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            border: 1px solid #00ffcc;
+            width: 300px;
+        }
+
+        .lock-container h2 {
+            margin-bottom: 20px;
+            color: #00ffcc;
+        }
+
+        .lock-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: #0f0f13;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+
+        .lock-container input:focus {
+            border-color: #00ffcc;
+        }
+
+        .lock-container button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background-color: #00ffcc;
+            color: #0f0f13;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .lock-container button:hover {
+            background-color: #00cca3;
+        }
+
+        #error-msg {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Main Content Container */
+        #main-content {
+            display: none; /* Hidden by default until password is entered */
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #00ffcc;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        /* Game Card Grid */
         .game-grid {
             display: flex;
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
-            margin-top: 30px;
         }
+
         .game-card {
-            background-color: #1e1e1e;
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            width: 200px;
+            background-color: #1a1a24;
+            border: 2px solid #2a2a3a;
+            border-radius: 10px;
+            padding: 25px;
+            width: 220px;
             text-decoration: none;
             color: #fff;
             transition: transform 0.2s, border-color 0.2s;
         }
+
         .game-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
             border-color: #00ffcc;
+        }
+
+        .game-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>Welcome to the Arcade</h1>
-    <p>Select a game to play:</p>
-
-    <div class="game-grid">
-        <a href="games/tictactoe/index.html" class="game-card">
-            <h2>Tic-Tac-Toe</h2>
-            <p>Classic 2-player game</p>
-        </a>
-        <a href="games/pong/index.html" class="game-card">
-            <h2>Pong</h2>
-            <p>Retro arcade action</p>
-        </a>
+    <!-- PASSWORD LOCK SCREEN -->
+    <div id="lock-screen">
+        <div class="lock-container">
+            <h2>Enter Password</h2>
+            <input type="password" id="password-input" placeholder="Password...">
+            <button onclick="checkPassword()">Enter</button>
+            <p id="error-msg">Incorrect password!</p>
+        </div>
     </div>
+
+    <!-- MAIN HOMEPAGE CONTENT -->
+    <div id="main-content">
+        <h1>Welcome to the Arcade</h1>
+        <p>Select a game to play:</p>
+
+        <div class="game-grid">
+            <a href="games/tictactoe/index.html" class="game-card">
+                <h2>Tic-Tac-Toe</h2>
+                <p>Classic 2-player game</p>
+            </a>
+            <a href="games/pong/index.html" class="game-card">
+                <h2>Pong</h2>
+                <p>Retro arcade action</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const CORRECT_PASSWORD = "1test1";
+
+        // Allow pressing 'Enter' key inside the input box
+        document.getElementById("password-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkPassword();
+            }
+        });
+
+        function checkPassword() {
+            const input = document.getElementById("password-input").value;
+            const errorMsg = document.getElementById("error-msg");
+            const lockScreen = document.getElementById("lock-screen");
+            const mainContent = document.getElementById("main-content");
+
+            if (input === CORRECT_PASSWORD) {
+                // Hide lock screen and display main homepage
+                lockScreen.style.display = "none";
+                mainContent.style.display = "block";
+            } else {
+                // Show error message
+                errorMsg.style.display = "block";
+                document.getElementById("password-input").value = "";
+            }
+        }
+    </script>
 
 </body>
 </html>
