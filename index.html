@@ -791,6 +791,12 @@
                         <p>Live stream of global public chat messages with timestamps</p>
                     </div>
 
+                    <!-- Dedicated Admin Quick-Chat Box -->
+<div class="chat-input-area" style="margin-top: 15px; max-width: 700px;">
+    <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin...">
+    <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
+</div>
+
                     <div class="chat-container">
                         <div class="chat-header">
                             <h3>👁️ Live Global Chat Logs</h3>
@@ -875,6 +881,22 @@
         ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
             document.addEventListener(evt, resetInactivityTimer, true);
         });
+
+        function sendAdminMessage() {
+    const input = document.getElementById("admin-chat-input");
+    const text = input.value.trim();
+    if (text === "") return;
+
+    const timeString = new Date().toLocaleTimeString([], { hour12: false });
+    const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+    
+    // Sends message under the active admin account username
+    messages.push({ sender: currentUser || "jadminj1", text: text, time: timeString });
+    localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
+
+    input.value = "";
+    loadGlobalMessages();
+}
 
         function resetInactivityTimer() {
             if (!currentUser) return;
@@ -1259,32 +1281,36 @@
             });
         }
 
-        // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS
-        function loadGlobalMessages() {
-            const userContainer = document.getElementById("global-chat-messages-container");
-            const adminContainer = document.getElementById("admin-chat-messages-container");
-            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+       // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS & ADMIN STYLING
+function loadGlobalMessages() {
+    const userContainer = document.getElementById("global-chat-messages-container");
+    const adminContainer = document.getElementById("admin-chat-messages-container");
+    const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
 
-            let userHtml = "";
-            let adminHtml = "";
+    let userHtml = "";
+    let adminHtml = "";
 
-            messages.forEach(msg => {
-                const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
-                const userClass = isAdmin ? "chat-msg-admin" : "chat-msg-user";
-                
-                userHtml += `<div class="chat-msg-row"><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
-                adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
-            });
+    messages.forEach(msg => {
+        const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
+        
+        // Admin styling: Red color and "[Admin]" tag
+        const senderLabel = isAdmin 
+            ? `<span style="color: #ff4757; font-weight: bold;">[Admin] ${msg.sender}:</span>` 
+            : `<span class="chat-msg-user">${msg.sender}:</span>`;
 
-            if (userContainer) {
-                userContainer.innerHTML = userHtml;
-                userContainer.scrollTop = userContainer.scrollHeight;
-            }
-            if (adminContainer) {
-                adminContainer.innerHTML = adminHtml;
-                adminContainer.scrollTop = adminContainer.scrollHeight;
-            }
-        }
+        userHtml += `<div class="chat-msg-row">${senderLabel} ${msg.text}</div>`;
+        adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span> ${senderLabel} ${msg.text}</div>`;
+    });
+
+    if (userContainer) {
+        userContainer.innerHTML = userHtml;
+        userContainer.scrollTop = userContainer.scrollHeight;
+    }
+    if (adminContainer) {
+        adminContainer.innerHTML = adminHtml;
+        adminContainer.scrollTop = adminContainer.scrollHeight;
+    }
+}
 
         function sendGlobalMessage() {
             const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
