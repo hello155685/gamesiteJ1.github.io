@@ -857,20 +857,49 @@
         const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
         const ADMIN_USERNAMES = ["jadminj1"];
         let currentUser = "";
+        let inactivityTimer = null;
 
         // Disable Right Click
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
 
+        // DETECT TAB CLOSING OR REFRESH
+        window.addEventListener('beforeunload', function() {
+            if (currentUser) {
+                removeActiveUser(currentUser);
+            }
+        });
+
+        // RESET INACTIVITY TIMER ON USER INTERACTIONS
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, resetInactivityTimer, true);
+        });
+
+        function resetInactivityTimer() {
+            if (!currentUser) return;
+            clearTimeout(inactivityTimer);
+            updateHeartbeat(currentUser);
+            
+            // Auto logout after 30 seconds (30000 ms) of inactivity
+            inactivityTimer = setTimeout(() => {
+                if (currentUser) {
+                    alert("Logged out due to 30 seconds of inactivity.");
+                    lockSite();
+                }
+            }, 30000);
+        }
+
         // LISTEN FOR REAL-TIME EVENTS ACROSS TABS
         window.addEventListener('storage', function(e) {
             if (e.key === 'gamehub_kicked_signal') {
-                const kickedUser = e.newValue;
-                if (kickedUser === currentUser) {
-                    alert("You have been kicked by an administrator.");
-                    lockSite();
-                }
+                try {
+                    const kickData = JSON.parse(e.newValue);
+                    if (kickData && kickData.user === currentUser) {
+                        alert("You have been kicked by an administrator.");
+                        lockSite();
+                    }
+                } catch(err) {}
             } else if (e.key === 'gamehub_global_chat') {
                 loadGlobalMessages();
             } else if (e.key === 'gamehub_banned_players') {
@@ -878,16 +907,21 @@
             }
         });
 
-        // 30-SECOND CHAT AUTO REFRESH
+        // 5-SECOND CHECK & AUTO REFRESH
         setInterval(() => {
-            loadGlobalMessages();
+            cleanExpiredSessions();
             cleanExpiredBans();
-        }, 30000);
+            if (currentUser) {
+                updateHeartbeat(currentUser);
+            }
+            loadGlobalMessages();
+        }, 5000);
 
         // INITIALIZE
         window.addEventListener("DOMContentLoaded", () => {
             cleanExpiredBans();
-            
+            cleanExpiredSessions();
+
             const savedUser = localStorage.getItem("gamehub_username");
             if (savedUser) {
                 document.getElementById("username-input").value = savedUser;
@@ -932,22 +966,44 @@
             }
         }
 
-        function isUserActive(username) {
-            const activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            return !!activeUsers[username];
+        function updateHeartbeat(username) {
+            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            activeSessions[username] = Date.now();
+            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
         }
 
-        function setActiveUser(username) {
-            let activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            activeUsers[username] = true;
-            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeUsers));
+        function isUserActive(username) {
+            cleanExpiredSessions();
+            const activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            return !!activeSessions[username];
+        }
+
+        function cleanExpiredSessions() {
+            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            const now = Date.now();
+            let changed = false;
+
+            for (let player in activeSessions) {
+                // If no activity in last 10 seconds, clear active session status
+                if (now - activeSessions[player] > 10000) {
+                    delete activeSessions[player];
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
+                if (document.getElementById("admin-content").style.display === "block") {
+                    loadAdminData();
+                }
+            }
         }
 
         function removeActiveUser(username) {
             if (!username) return;
-            let activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            delete activeUsers[username];
-            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeUsers));
+            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            delete activeSessions[username];
+            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
         }
 
         function checkPassword() {
@@ -975,8 +1031,9 @@
 
             currentUser = userVal;
             localStorage.setItem("gamehub_username", currentUser);
-            setActiveUser(currentUser);
+            updateHeartbeat(currentUser);
             registerUserInDirectory(currentUser);
+            resetInactivityTimer();
 
             document.getElementById("lock-screen").style.display = "none";
 
@@ -1012,6 +1069,7 @@
         }
 
         function lockSite() {
+            clearTimeout(inactivityTimer);
             removeActiveUser(currentUser);
             currentUser = "";
             document.getElementById("main-content").style.display = "none";
@@ -1059,6 +1117,7 @@
 
         function loadAdminData() {
             cleanExpiredBans();
+            cleanExpiredSessions();
             const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
             const playersTable = document.getElementById("admin-players-list");
             const statsTable = document.getElementById("admin-stats-list");
@@ -1112,9 +1171,12 @@
         }
 
         function kickPlayer(targetUser) {
-            localStorage.setItem("gamehub_kicked_signal", targetUser);
             removeActiveUser(targetUser);
+            // Send trigger object with timestamp to guarantee storage listener fires across all tabs
+            localStorage.setItem("gamehub_kicked_signal", JSON.stringify({ user: targetUser, time: Date.now() }));
+            
             if (targetUser === currentUser) {
+                alert("You have been kicked by an administrator.");
                 lockSite();
             } else {
                 alert(`Kick signal sent for ${targetUser}.`);
