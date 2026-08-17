@@ -408,20 +408,6 @@
             margin-top: 3px;
         }
 
-        .btn-chat {
-            background-color: var(--tag-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-chat:hover {
-            border-color: var(--accent-color);
-        }
-
         /* LIVE CHAT INTERFACE */
         .chat-container {
             max-width: 700px;
@@ -460,6 +446,12 @@
             font-size: 0.95rem;
             line-height: 1.4;
             word-wrap: break-word;
+        }
+
+        .chat-timestamp {
+            font-size: 0.75rem;
+            color: var(--subtext-color);
+            margin-right: 8px;
         }
 
         .chat-msg-user {
@@ -603,7 +595,7 @@
             <input type="text" id="username-input" placeholder="Choose Username...">
             <input type="password" id="password-input" placeholder="Password...">
             <button onclick="checkPassword()">Enter Hub</button>
-            <p id="error-msg">Incorrect password or missing username!</p>
+            <p id="error-msg">Incorrect password, user active, or user banned!</p>
         </div>
     </div>
 
@@ -796,7 +788,7 @@
                 <div id="admin-chats-view" style="display: none;">
                     <div class="header">
                         <h1>Global Chat Monitor</h1>
-                        <p>Live stream of global public chat messages</p>
+                        <p>Live stream of global public chat messages with timestamps</p>
                     </div>
 
                     <div class="chat-container">
@@ -862,7 +854,7 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        const ALLOWED_PASSWORDS = ["1test1", "secret123", "admin123"];
+        const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
         const ADMIN_USERNAMES = ["jadminj1"];
         let currentUser = "";
 
@@ -871,7 +863,7 @@
             event.preventDefault();
         });
 
-        // LISTEN FOR REAL-TIME KICKS AND MESSAGES ACROSS TABS
+        // LISTEN FOR REAL-TIME EVENTS ACROSS TABS
         window.addEventListener('storage', function(e) {
             if (e.key === 'gamehub_kicked_signal') {
                 const kickedUser = e.newValue;
@@ -881,11 +873,21 @@
                 }
             } else if (e.key === 'gamehub_global_chat') {
                 loadGlobalMessages();
+            } else if (e.key === 'gamehub_banned_players') {
+                checkBanStatus();
             }
         });
 
-        // Initialize on Load
+        // 30-SECOND CHAT AUTO REFRESH
+        setInterval(() => {
+            loadGlobalMessages();
+            cleanExpiredBans();
+        }, 30000);
+
+        // INITIALIZE
         window.addEventListener("DOMContentLoaded", () => {
+            cleanExpiredBans();
+            
             const savedUser = localStorage.getItem("gamehub_username");
             if (savedUser) {
                 document.getElementById("username-input").value = savedUser;
@@ -904,35 +906,93 @@
             });
         });
 
+        function isUserBanned(username) {
+            cleanExpiredBans();
+            const bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
+            return !!bans[username];
+        }
+
+        function cleanExpiredBans() {
+            let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
+            const now = Date.now();
+            let changed = false;
+
+            for (let player in bans) {
+                if (now > bans[player]) {
+                    delete bans[player];
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
+                if (document.getElementById("admin-content").style.display === "block") {
+                    loadAdminData();
+                }
+            }
+        }
+
+        function isUserActive(username) {
+            const activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            return !!activeUsers[username];
+        }
+
+        function setActiveUser(username) {
+            let activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            activeUsers[username] = true;
+            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeUsers));
+        }
+
+        function removeActiveUser(username) {
+            if (!username) return;
+            let activeUsers = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
+            delete activeUsers[username];
+            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeUsers));
+        }
+
         function checkPassword() {
             const userVal = document.getElementById("username-input").value.trim();
             const passVal = document.getElementById("password-input").value;
             const errorMsg = document.getElementById("error-msg");
 
-            if (userVal !== "" && ALLOWED_PASSWORDS.includes(passVal)) {
-                currentUser = userVal;
-                localStorage.setItem("gamehub_username", currentUser);
-
-                registerUserInDirectory(currentUser);
-
-                document.getElementById("lock-screen").style.display = "none";
-
-                if (ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
-                    document.getElementById("admin-content").style.display = "block";
-                    document.getElementById("main-content").style.display = "none";
-                    loadAdminData();
-                } else {
-                    document.getElementById("main-content").style.display = "block";
-                    document.getElementById("admin-content").style.display = "none";
-
-                    document.getElementById("display-username").innerText = currentUser;
-                    document.getElementById("welcome-username").innerText = currentUser;
-                    document.getElementById("display-avatar").innerText = currentUser.charAt(0);
-
-                    loadFriendsList();
-                }
-            } else {
+            if (!userVal || !ALLOWED_PASSWORDS.includes(passVal)) {
+                errorMsg.innerText = "Incorrect password or missing username!";
                 errorMsg.style.display = "block";
+                return;
+            }
+
+            if (isUserBanned(userVal)) {
+                errorMsg.innerText = "This username is banned! Try again later.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            if (isUserActive(userVal)) {
+                errorMsg.innerText = "This username is already currently logged in!";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            currentUser = userVal;
+            localStorage.setItem("gamehub_username", currentUser);
+            setActiveUser(currentUser);
+            registerUserInDirectory(currentUser);
+
+            document.getElementById("lock-screen").style.display = "none";
+
+            if (ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
+                document.getElementById("admin-content").style.display = "block";
+                document.getElementById("main-content").style.display = "none";
+                loadAdminData();
+            } else {
+                document.getElementById("main-content").style.display = "block";
+                document.getElementById("admin-content").style.display = "none";
+
+                document.getElementById("display-username").innerText = currentUser;
+                document.getElementById("welcome-username").innerText = currentUser;
+                document.getElementById("display-avatar").innerText = currentUser.charAt(0);
+
+                loadFriendsList();
             }
         }
 
@@ -944,7 +1004,16 @@
             }
         }
 
+        function checkBanStatus() {
+            if (currentUser && isUserBanned(currentUser)) {
+                alert("You have been banned for 3 minutes.");
+                lockSite();
+            }
+        }
+
         function lockSite() {
+            removeActiveUser(currentUser);
+            currentUser = "";
             document.getElementById("main-content").style.display = "none";
             document.getElementById("admin-content").style.display = "none";
             document.getElementById("lock-screen").style.display = "flex";
@@ -989,6 +1058,7 @@
         }
 
         function loadAdminData() {
+            cleanExpiredBans();
             const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
             const playersTable = document.getElementById("admin-players-list");
             const statsTable = document.getElementById("admin-stats-list");
@@ -998,13 +1068,12 @@
             statsTable.innerHTML = "";
             actionTable.innerHTML = "";
 
-            const bannedPlayers = JSON.parse(localStorage.getItem("gamehub_banned_players")) || [];
             const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
 
             players.forEach(player => {
-                const isOnline = player === currentUser;
+                const isOnline = isUserActive(player);
                 const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
-                const isBanned = bannedPlayers.includes(player);
+                const isBanned = isUserBanned(player);
                 const isMuted = mutedPlayers.includes(player);
                 
                 // Players Row
@@ -1042,24 +1111,28 @@
             });
         }
 
-        // REAL-TIME ADMIN KICK FUNCTION
         function kickPlayer(targetUser) {
             localStorage.setItem("gamehub_kicked_signal", targetUser);
+            removeActiveUser(targetUser);
             if (targetUser === currentUser) {
                 lockSite();
             } else {
                 alert(`Kick signal sent for ${targetUser}.`);
             }
+            loadAdminData();
         }
 
         function toggleBan(targetUser) {
-            let bannedPlayers = JSON.parse(localStorage.getItem("gamehub_banned_players")) || [];
-            if (bannedPlayers.includes(targetUser)) {
-                bannedPlayers = bannedPlayers.filter(p => p !== targetUser);
+            let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
+            if (bans[targetUser]) {
+                delete bans[targetUser];
             } else {
-                bannedPlayers.push(targetUser);
+                // Ban for 3 minutes (180,000 ms)
+                bans[targetUser] = Date.now() + 180000;
+                kickPlayer(targetUser);
             }
-            localStorage.setItem("gamehub_banned_players", JSON.stringify(bannedPlayers));
+            localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
+            localStorage.setItem("gamehub_banned_players", JSON.stringify(Object.keys(bans)));
             loadAdminData();
         }
 
@@ -1124,25 +1197,29 @@
             });
         }
 
-        // GLOBAL CHAT ROOM SYSTEM (ROBLOX STYLE)
+        // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS
         function loadGlobalMessages() {
             const userContainer = document.getElementById("global-chat-messages-container");
             const adminContainer = document.getElementById("admin-chat-messages-container");
             const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
 
-            let htmlContent = "";
+            let userHtml = "";
+            let adminHtml = "";
+
             messages.forEach(msg => {
                 const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
                 const userClass = isAdmin ? "chat-msg-admin" : "chat-msg-user";
-                htmlContent += `<div class="chat-msg-row"><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
+                
+                userHtml += `<div class="chat-msg-row"><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
+                adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span><span class="${userClass}">[${msg.sender}]:</span> ${msg.text}</div>`;
             });
 
             if (userContainer) {
-                userContainer.innerHTML = htmlContent;
+                userContainer.innerHTML = userHtml;
                 userContainer.scrollTop = userContainer.scrollHeight;
             }
             if (adminContainer) {
-                adminContainer.innerHTML = htmlContent;
+                adminContainer.innerHTML = adminHtml;
                 adminContainer.scrollTop = adminContainer.scrollHeight;
             }
         }
@@ -1158,9 +1235,10 @@
             const text = input.value.trim();
             if (text === "") return;
 
+            const timeString = new Date().toLocaleTimeString([], { hour12: false });
             const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-            messages.push({ sender: currentUser, text: text });
-
+            
+            messages.push({ sender: currentUser, text: text, time: timeString });
             localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
 
             input.value = "";
