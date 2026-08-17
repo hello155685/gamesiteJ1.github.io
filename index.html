@@ -177,33 +177,36 @@
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
-    <script>
-        const CORRECT_PASSWORD = "1test1";
+<script>
+    const CORRECT_PASSWORD = "scrt";
 
-        // Allow pressing 'Enter' key inside the input box
-        document.getElementById("password-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkPassword();
-            }
-        });
+    // Disable the right-click menu across the entire page
+    document.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+    });
 
-        function checkPassword() {
-            const input = document.getElementById("password-input").value;
-            const errorMsg = document.getElementById("error-msg");
-            const lockScreen = document.getElementById("lock-screen");
-            const mainContent = document.getElementById("main-content");
-
-            if (input === CORRECT_PASSWORD) {
-                // Hide lock screen and display main homepage
-                lockScreen.style.display = "none";
-                mainContent.style.display = "block";
-            } else {
-                // Show error message
-                errorMsg.style.display = "block";
-                document.getElementById("password-input").value = "";
-            }
+    // Allow pressing 'Enter' key inside the input box
+    document.getElementById("password-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            checkPassword();
         }
-    </script>
+    });
+
+    function checkPassword() {
+        const input = document.getElementById("password-input").value;
+        const errorMsg = document.getElementById("error-msg");
+        const lockScreen = document.getElementById("lock-screen");
+        const mainContent = document.getElementById("main-content");
+
+        if (input === CORRECT_PASSWORD) {
+            lockScreen.style.display = "none";
+            mainContent.style.display = "block";
+        } else {
+            errorMsg.style.display = "block";
+            document.getElementById("password-input").value = "";
+        }
+    }
+</script>
 
 </body>
 </html>
