@@ -685,7 +685,7 @@
                             <div class="stat-label">Wins</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">0</div>
+                            <div class="stat-number" id="user-stat-challenges">0</div>
                             <div class="stat-label">Challenges</div>
                         </div>
                     </div>
@@ -721,21 +721,23 @@
                     <div class="header-bar">
                         <div class="header">
                             <h1>Friends</h1>
-                            <p>Search and add players to your list</p>
+                            <p>Search and manage friend requests</p>
                         </div>
                     </div>
 
                     <div class="search-box">
                         <input type="text" id="friend-search-input" class="search-input" placeholder="🔍 Search or add username...">
-                        <button class="btn-add-friend" onclick="addFriendFromSearch()">Add</button>
+                        <button class="btn-add-friend" onclick="sendFriendRequest()">Send Request</button>
                     </div>
 
                     <div class="filter-tags">
-                        <div class="tag active">Friends (<span id="friend-count">0</span>)</div>
+                        <div id="friend-subtab-friends" class="tag active" onclick="switchFriendSubtab('friends')">Friends (<span id="friend-count">0</span>)</div>
+                        <div id="friend-subtab-requests" class="tag" onclick="switchFriendSubtab('requests')">Requests (<span id="request-count">0</span>)</div>
+                        <div id="friend-subtab-sent" class="tag" onclick="switchFriendSubtab('sent')">Sent (<span id="sent-count">0</span>)</div>
                     </div>
 
                     <div class="friends-list" id="friends-list-container">
-                        <!-- Friend cards load here dynamically -->
+                        <!-- Content populated dynamically -->
                     </div>
                 </div>
 
@@ -860,7 +862,7 @@
                     <div class="header-bar">
                         <div class="header">
                             <h1>Global Player Stats</h1>
-                            <p>Overview of wins and games played across all registered users</p>
+                            <p>Overview of wins, played games, and challenges across all registered users</p>
                         </div>
                         <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
                     </div>
@@ -872,6 +874,7 @@
                                     <th>Player</th>
                                     <th>Games Played</th>
                                     <th>Wins</th>
+                                    <th>Challenges</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-stats-list">
@@ -916,7 +919,9 @@
     <script>
         const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
         const ADMIN_USERNAMES = ["jadminj1"];
+        const ADMIN_EXCLUSIVE_PASSWORD = "JadminJ1";
         let currentUser = "";
+        let currentFriendSubtab = "friends";
         let inactivityTimer = null;
 
         // Disable Right Click
@@ -966,6 +971,8 @@
                 checkBanStatus();
             } else if (e.key === 'gamehub_player_stats') {
                 updateUserStatsDisplay();
+            } else if (e.key.startsWith('gamehub_friend_requests_') || e.key.startsWith('gamehub_friends_')) {
+                loadFriendSubtabContent();
             }
         });
 
@@ -994,7 +1001,7 @@
             });
 
             document.getElementById("friend-search-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") addFriendFromSearch();
+                if (e.key === "Enter") sendFriendRequest();
             });
 
             document.getElementById("global-chat-input").addEventListener("keypress", (e) => {
@@ -1079,10 +1086,26 @@
             const passVal = document.getElementById("password-input").value;
             const errorMsg = document.getElementById("error-msg");
 
-            if (!userVal || !ALLOWED_PASSWORDS.includes(passVal)) {
-                errorMsg.innerText = "Incorrect password or missing username!";
+            if (!userVal) {
+                errorMsg.innerText = "Please enter a username!";
                 errorMsg.style.display = "block";
                 return;
+            }
+
+            const isAdminUser = ADMIN_USERNAMES.includes(userVal.toLowerCase());
+
+            if (isAdminUser) {
+                if (passVal !== ADMIN_EXCLUSIVE_PASSWORD) {
+                    errorMsg.innerText = "Incorrect Admin password!";
+                    errorMsg.style.display = "block";
+                    return;
+                }
+            } else {
+                if (!ALLOWED_PASSWORDS.includes(passVal)) {
+                    errorMsg.innerText = "Incorrect password!";
+                    errorMsg.style.display = "block";
+                    return;
+                }
             }
 
             if (isUserBanned(userVal)) {
@@ -1105,7 +1128,7 @@
 
             document.getElementById("lock-screen").style.display = "none";
 
-            if (ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
+            if (isAdminUser) {
                 document.getElementById("admin-content").style.display = "block";
                 document.getElementById("main-content").style.display = "none";
                 loadAdminData();
@@ -1119,7 +1142,7 @@
                 document.getElementById("switch-to-admin-btn").style.display = "none";
 
                 updateUserStatsDisplay();
-                loadFriendsList();
+                loadFriendSubtabContent();
             }
         }
 
@@ -1136,7 +1159,7 @@
             document.getElementById("switch-to-admin-btn").style.display = "block";
 
             updateUserStatsDisplay();
-            loadFriendsList();
+            loadFriendSubtabContent();
         }
 
         function switchToAdminIdentity() {
@@ -1148,13 +1171,15 @@
         function updateUserStatsDisplay() {
             if (!currentUser) return;
             const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            const stats = playerStats[currentUser] || { played: 0, wins: 0 };
+            const stats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0 };
             
             const playedEl = document.getElementById("user-stat-played");
             const winsEl = document.getElementById("user-stat-wins");
+            const challengesEl = document.getElementById("user-stat-challenges");
 
             if (playedEl) playedEl.innerText = stats.played;
             if (winsEl) winsEl.innerText = stats.wins;
+            if (challengesEl) challengesEl.innerText = stats.challenges || 0;
         }
 
         function registerUserInDirectory(username) {
@@ -1197,7 +1222,9 @@
             document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
             document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
 
-            if (tabName === 'global-chat') {
+            if (tabName === 'friends') {
+                loadFriendSubtabContent();
+            } else if (tabName === 'global-chat') {
                 loadGlobalMessages();
             }
         }
@@ -1240,7 +1267,7 @@
                 const isBanned = isUserBanned(player);
                 const isMuted = mutedPlayers.includes(player);
                 
-                const currentStats = playerStats[player] || { played: 0, wins: 0 };
+                const currentStats = playerStats[player] || { played: 0, wins: 0, challenges: 0 };
 
                 // Players Row
                 const pRow = document.createElement("tr");
@@ -1257,12 +1284,13 @@
                 `;
                 playersTable.appendChild(pRow);
 
-                // Stats Row
+                // Stats Row with Challenges Column
                 const sRow = document.createElement("tr");
                 sRow.innerHTML = `
                     <td><strong>${player}</strong></td>
                     <td>${currentStats.played}</td>
                     <td>${currentStats.wins}</td>
+                    <td>${currentStats.challenges || 0}</td>
                 `;
                 statsTable.appendChild(sRow);
 
@@ -1286,15 +1314,15 @@
         }
 
         function changePlayerData(targetUser) {
-            const adminPass = prompt(`Enter admin password (jadminj1) to edit stats for ${targetUser}:`);
+            const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`);
             
-            if (adminPass !== "jadminj1") {
+            if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
                 alert("Incorrect admin password! Action canceled.");
                 return;
             }
 
             let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            let currentStats = playerStats[targetUser] || { played: 0, wins: 0 };
+            let currentStats = playerStats[targetUser] || { played: 0, wins: 0, challenges: 0 };
 
             const newPlayed = prompt(`Enter new 'Games Played' count for ${targetUser}:`, currentStats.played);
             if (newPlayed === null) return;
@@ -1302,20 +1330,25 @@
             const newWins = prompt(`Enter new 'Wins' count for ${targetUser}:`, currentStats.wins);
             if (newWins === null) return;
 
+            const newChallenges = prompt(`Enter new 'Challenges' count for ${targetUser}:`, currentStats.challenges || 0);
+            if (newChallenges === null) return;
+
             playerStats[targetUser] = {
                 played: parseInt(newPlayed, 10) || 0,
-                wins: parseInt(newWins, 10) || 0
+                wins: parseInt(newWins, 10) || 0,
+                challenges: parseInt(newChallenges, 10) || 0
             };
 
             localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
             alert(`Updated stats live for ${targetUser}!`);
             loadAdminData();
+            updateUserStatsDisplay();
         }
 
         function removePlayerData(targetUser) {
-            const adminPass = prompt(`Enter admin password (jadminj1) to REMOVE ALL DATA for ${targetUser}:`);
+            const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to REMOVE ALL DATA for ${targetUser}:`);
 
-            if (adminPass !== "jadminj1") {
+            if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
                 alert("Incorrect admin password! Action canceled.");
                 return;
             }
@@ -1329,6 +1362,8 @@
             localStorage.setItem("gamehub_all_players", JSON.stringify(players));
 
             localStorage.removeItem("gamehub_friends_" + targetUser);
+            localStorage.removeItem("gamehub_friend_requests_" + targetUser);
+            localStorage.removeItem("gamehub_friend_sent_" + targetUser);
 
             let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
             delete playerStats[targetUser];
@@ -1382,57 +1417,196 @@
             loadAdminData();
         }
 
-        // FRIENDS MANAGEMENT
-        function getSavedFriends() {
-            return JSON.parse(localStorage.getItem("gamehub_friends_" + currentUser)) || [];
+        // FRIENDS & REQUESTS SYSTEM
+        function getSavedFriends(user) {
+            return JSON.parse(localStorage.getItem("gamehub_friends_" + (user || currentUser))) || [];
         }
 
-        function addFriendFromSearch() {
+        function getFriendRequests(user) {
+            return JSON.parse(localStorage.getItem("gamehub_friend_requests_" + (user || currentUser))) || [];
+        }
+
+        function getSentRequests(user) {
+            return JSON.parse(localStorage.getItem("gamehub_friend_sent_" + (user || currentUser))) || [];
+        }
+
+        function switchFriendSubtab(subtab) {
+            currentFriendSubtab = subtab;
+            document.getElementById("friend-subtab-friends").classList.toggle("active", subtab === 'friends');
+            document.getElementById("friend-subtab-requests").classList.toggle("active", subtab === 'requests');
+            document.getElementById("friend-subtab-sent").classList.toggle("active", subtab === 'sent');
+            loadFriendSubtabContent();
+        }
+
+        function sendFriendRequest() {
             const searchInput = document.getElementById("friend-search-input");
-            const name = searchInput.value.trim();
+            const targetUser = searchInput.value.trim();
 
-            if (name === "" || name === currentUser) return;
-
-            let friends = getSavedFriends();
-            if (!friends.includes(name)) {
-                friends.push(name);
-                localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(friends));
-                registerUserInDirectory(name);
-                loadFriendsList();
-            }
-            searchInput.value = "";
-        }
-
-        function loadFriendsList() {
-            const container = document.getElementById("friends-list-container");
-            const countLabel = document.getElementById("friend-count");
-            const friends = getSavedFriends();
-
-            container.innerHTML = "";
-            countLabel.innerText = friends.length;
-
-            if (friends.length === 0) {
-                container.innerHTML = "<p style='color: var(--subtext-color);'>No friends added yet. Type a name above to add!</p>";
+            if (!targetUser || targetUser === currentUser) {
+                alert("Enter a valid username other than yourself!");
                 return;
             }
 
-            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+            let friends = getSavedFriends(currentUser);
+            if (friends.includes(targetUser)) {
+                alert(`${targetUser} is already your friend!`);
+                searchInput.value = "";
+                return;
+            }
 
-            friends.forEach(friend => {
-                const stats = playerStats[friend] || { played: 0, wins: 0 };
-                const card = document.createElement("div");
-                card.className = "friend-card";
-                card.innerHTML = `
-                    <div class="friend-info">
-                        <div class="friend-avatar">${friend.charAt(0)}</div>
-                        <div>
-                            <strong>${friend}</strong>
-                            <div class="friend-stats">${stats.played} games • ${stats.wins} wins</div>
+            let sent = getSentRequests(currentUser);
+            if (sent.includes(targetUser)) {
+                alert(`Friend request already sent to ${targetUser}!`);
+                searchInput.value = "";
+                return;
+            }
+
+            let requests = getFriendRequests(targetUser);
+            if (!requests.includes(currentUser)) {
+                requests.push(currentUser);
+                localStorage.setItem("gamehub_friend_requests_" + targetUser, JSON.stringify(requests));
+            }
+
+            sent.push(targetUser);
+            localStorage.setItem("gamehub_friend_sent_" + currentUser, JSON.stringify(sent));
+
+            registerUserInDirectory(targetUser);
+            alert(`Friend request sent to ${targetUser}!`);
+            searchInput.value = "";
+            loadFriendSubtabContent();
+        }
+
+        function acceptFriendRequest(sender) {
+            let requests = getFriendRequests(currentUser);
+            requests = requests.filter(r => r !== sender);
+            localStorage.setItem("gamehub_friend_requests_" + currentUser, JSON.stringify(requests));
+
+            let sent = getSentRequests(sender);
+            sent = sent.filter(s => s !== currentUser);
+            localStorage.setItem("gamehub_friend_sent_" + sender, JSON.stringify(sent));
+
+            let myFriends = getSavedFriends(currentUser);
+            if (!myFriends.includes(sender)) {
+                myFriends.push(sender);
+                localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
+            }
+
+            let senderFriends = getSavedFriends(sender);
+            if (!senderFriends.includes(currentUser)) {
+                senderFriends.push(currentUser);
+                localStorage.setItem("gamehub_friends_" + sender, JSON.stringify(senderFriends));
+            }
+
+            loadFriendSubtabContent();
+        }
+
+        function denyFriendRequest(sender) {
+            let requests = getFriendRequests(currentUser);
+            requests = requests.filter(r => r !== sender);
+            localStorage.setItem("gamehub_friend_requests_" + currentUser, JSON.stringify(requests));
+
+            let sent = getSentRequests(sender);
+            sent = sent.filter(s => s !== currentUser);
+            localStorage.setItem("gamehub_friend_sent_" + sender, JSON.stringify(sent));
+
+            loadFriendSubtabContent();
+        }
+
+        function cancelSentRequest(target) {
+            let sent = getSentRequests(currentUser);
+            sent = sent.filter(s => s !== target);
+            localStorage.setItem("gamehub_friend_sent_" + currentUser, JSON.stringify(sent));
+
+            let requests = getFriendRequests(target);
+            requests = requests.filter(r => r !== currentUser);
+            localStorage.setItem("gamehub_friend_requests_" + target, JSON.stringify(requests));
+
+            loadFriendSubtabContent();
+        }
+
+        function loadFriendSubtabContent() {
+            const container = document.getElementById("friends-list-container");
+            const friends = getSavedFriends(currentUser);
+            const requests = getFriendRequests(currentUser);
+            const sent = getSentRequests(currentUser);
+
+            document.getElementById("friend-count").innerText = friends.length;
+            document.getElementById("request-count").innerText = requests.length;
+            document.getElementById("sent-count").innerText = sent.length;
+
+            container.innerHTML = "";
+
+            if (currentFriendSubtab === "friends") {
+                if (friends.length === 0) {
+                    container.innerHTML = "<p style='color: var(--subtext-color);'>No friends added yet. Send a request above!</p>";
+                    return;
+                }
+
+                const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+                friends.forEach(friend => {
+                    const stats = playerStats[friend] || { played: 0, wins: 0, challenges: 0 };
+                    const card = document.createElement("div");
+                    card.className = "friend-card";
+                    card.innerHTML = `
+                        <div class="friend-info">
+                            <div class="friend-avatar">${friend.charAt(0)}</div>
+                            <div>
+                                <strong>${friend}</strong>
+                                <div class="friend-stats">${stats.played} games • ${stats.wins} wins • ${stats.challenges || 0} challenges</div>
+                            </div>
                         </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+                    `;
+                    container.appendChild(card);
+                });
+            } else if (currentFriendSubtab === "requests") {
+                if (requests.length === 0) {
+                    container.innerHTML = "<p style='color: var(--subtext-color);'>No incoming friend requests.</p>";
+                    return;
+                }
+
+                requests.forEach(sender => {
+                    const card = document.createElement("div");
+                    card.className = "friend-card";
+                    card.innerHTML = `
+                        <div class="friend-info">
+                            <div class="friend-avatar">${sender.charAt(0)}</div>
+                            <div>
+                                <strong>${sender}</strong>
+                                <div class="friend-stats">Wants to add you as a friend</div>
+                            </div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-act" style="background-color: #2ecc71;" onclick="acceptFriendRequest('${sender}')">Accept</button>
+                            <button class="btn-act" style="background-color: #e74c3c;" onclick="denyFriendRequest('${sender}')">Deny</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else if (currentFriendSubtab === "sent") {
+                if (sent.length === 0) {
+                    container.innerHTML = "<p style='color: var(--subtext-color);'>No pending sent requests.</p>";
+                    return;
+                }
+
+                sent.forEach(target => {
+                    const card = document.createElement("div");
+                    card.className = "friend-card";
+                    card.innerHTML = `
+                        <div class="friend-info">
+                            <div class="friend-avatar">${target.charAt(0)}</div>
+                            <div>
+                                <strong>${target}</strong>
+                                <div class="friend-stats">Request pending...</div>
+                            </div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-act" style="background-color: #e67e22;" onclick="cancelSentRequest('${target}')">Cancel</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
         }
 
         // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS
