@@ -1201,14 +1201,16 @@
 
                     <div class="admin-table-container">
                         <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
-                                    <th>Games Played</th>
-                                    <th>Wins</th>
-                                    <th>Challenges</th>
-                                </tr>
-                            </thead>
+                          <thead>
+                            <tr>
+                              <th>Player</th>
+                              <th>Games Played</th>
+                              <th>Wins</th>
+                              <th>Challenges</th>
+                              <th>⭐ XP</th>
+                              <th>💰 Money</th>
+                            </tr>
+                          </thead>
                             <tbody id="admin-stats-list">
                                 <!-- Stats populated dynamically -->
                             </tbody>
@@ -1830,7 +1832,16 @@ function escapeAnnouncementText(text) {
                 const isBanned = isUserBanned(player);
                 const isMuted = mutedPlayers.includes(player);
                 
-                const currentStats = playerStats[player] || { played: 0, wins: 0, challenges: 0 };
+               const currentStats = playerStats[player] || {
+    played: 0,
+    wins: 0,
+    challenges: 0,
+    xp: 0,
+    money: 0
+};
+
+currentStats.xp = currentStats.xp || 0;
+currentStats.money = currentStats.money || 0;
 
                 // Players Row
                 const pRow = document.createElement("tr");
@@ -1848,14 +1859,17 @@ function escapeAnnouncementText(text) {
                 playersTable.appendChild(pRow);
 
                 // Stats Row with Challenges Column
-                const sRow = document.createElement("tr");
-                sRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td>${currentStats.played}</td>
-                    <td>${currentStats.wins}</td>
-                    <td>${currentStats.challenges || 0}</td>
-                `;
-                statsTable.appendChild(sRow);
+               // Stats Row
+const sRow = document.createElement("tr");
+sRow.innerHTML = `
+    <td><strong>${player}</strong></td>
+    <td>${currentStats.played || 0}</td>
+    <td>${currentStats.wins || 0}</td>
+    <td>${currentStats.challenges || 0}</td>
+    <td>⭐ ${currentStats.xp}</td>
+    <td>💰 ${currentStats.money}</td>
+`;
+statsTable.appendChild(sRow);
 
                 // Action Row with Admin Protection
                 const actionButtons = isAdmin 
