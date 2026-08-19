@@ -891,6 +891,8 @@
                         
                         <button class="nav-item" id="nav-announcements" onclick="showTab('announcements')">
     📢 Announcements
+                            <button class="nav-item" id="nav-shop" onclick="showTab('shop')">
+    🛒 Shop
 </button>
                     </nav>
                 </div>
@@ -1064,6 +1066,55 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- SHOP VIEW -->
+<div id="shop-view" style="display: none;">
+    <div class="header-bar">
+        <div class="header">
+            <h1>🛒 Shop</h1>
+            <p>Spend your Money on items, cosmetics, and more.</p>
+        </div>
+    </div>
+
+    <div class="shop-layout">
+
+        <!-- SHOP CATEGORIES -->
+        <div class="shop-sidebar">
+            <button class="shop-category active" onclick="showShopCategory('featured')">
+                ⭐ Featured
+            </button>
+
+            <button class="shop-category" onclick="showShopCategory('themes')">
+                🎨 Themes
+            </button>
+
+            <button class="shop-category" onclick="showShopCategory('profile')">
+                👤 Profile
+            </button>
+
+            <button class="shop-category" onclick="showShopCategory('badges')">
+                🏅 Badges
+            </button>
+
+            <button class="shop-category" onclick="showShopCategory('effects')">
+                ✨ Effects
+            </button>
+        </div>
+
+        <!-- SHOP CONTENT -->
+        <div class="shop-content">
+
+            <div class="shop-balance">
+                💰 <span id="shop-money">0</span> Money
+            </div>
+
+            <div id="shop-items" class="shop-items">
+                <!-- Shop items will be loaded here -->
+            </div>
+
+        </div>
+    </div>
+</div>
 
                 <!-- ANNOUNCEMENTS VIEW -->
                 <div id="announcements-view" style="display: none;">
@@ -1709,22 +1760,59 @@
             document.body.classList.toggle("light-mode");
         }
 
-        // USER TAB SWITCHING
-        function showTab(tabName) {
-    document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
-    document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
-    document.getElementById("global-chat-view").style.display = tabName === 'global-chat' ? "block" : "none";
-    document.getElementById("announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
+    // USER TAB SWITCHING
+function showTab(tabName) {
+    document.getElementById("games-view").style.display =
+        tabName === 'games' ? "block" : "none";
 
-    document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
-    document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
-    document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
-    document.getElementById("nav-announcements").classList.toggle("active", tabName === 'announcements');
+    document.getElementById("friends-view").style.display =
+        tabName === 'friends' ? "block" : "none";
+
+    document.getElementById("global-chat-view").style.display =
+        tabName === 'global-chat' ? "block" : "none";
+
+    document.getElementById("shop-view").style.display =
+        tabName === 'shop' ? "block" : "none";
+
+    document.getElementById("announcements-view").style.display =
+        tabName === 'announcements' ? "block" : "none";
+
+
+    document.getElementById("nav-games").classList.toggle(
+        "active",
+        tabName === 'games'
+    );
+
+    document.getElementById("nav-friends").classList.toggle(
+        "active",
+        tabName === 'friends'
+    );
+
+    document.getElementById("nav-global-chat").classList.toggle(
+        "active",
+        tabName === 'global-chat'
+    );
+
+    document.getElementById("nav-shop").classList.toggle(
+        "active",
+        tabName === 'shop'
+    );
+
+    document.getElementById("nav-announcements").classList.toggle(
+        "active",
+        tabName === 'announcements'
+    );
+
 
     if (tabName === 'friends') {
         loadFriendSubtabContent();
+
     } else if (tabName === 'global-chat') {
         loadGlobalMessages();
+
+    } else if (tabName === 'shop') {
+        loadShop();
+
     } else if (tabName === 'announcements') {
         loadAnnouncements();
     }
@@ -2775,6 +2863,149 @@ function sendPrivateMessage() {
 
     input.value = "";
     loadPrivateMessages();
+}
+
+        // =============================
+// SHOP SYSTEM
+// =============================
+
+const SHOP_ITEMS = [
+    {
+        id: "profile_blue",
+        name: "Blue Profile",
+        description: "A blue profile style.",
+        price: 100,
+        category: "profile"
+    },
+    {
+        id: "badge_gamer",
+        name: "Gamer Badge",
+        description: "Show off your gamer status.",
+        price: 250,
+        category: "badges"
+    },
+    {
+        id: "theme_dark",
+        name: "Premium Dark Theme",
+        description: "A special dark theme for your profile.",
+        price: 500,
+        category: "themes"
+    },
+    {
+        id: "effect_sparkle",
+        name: "Sparkle Effect",
+        description: "Add a sparkle effect to your profile.",
+        price: 750,
+        category: "effects"
+    }
+];
+
+let currentShopCategory = "featured";
+
+function loadShop() {
+    const money = document.getElementById("shop-money");
+
+    if (!currentUser || !money) return;
+
+    const playerStats =
+        JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+    const stats = playerStats[currentUser] || {
+        money: 0
+    };
+
+    money.innerText = stats.money || 0;
+
+    loadShopItems();
+}
+
+function showShopCategory(category) {
+    currentShopCategory = category;
+
+    document.querySelectorAll(".shop-category").forEach(button => {
+        button.classList.remove("active");
+    });
+
+    loadShopItems();
+}
+
+function loadShopItems() {
+    const container = document.getElementById("shop-items");
+
+    if (!container) return;
+
+    let items = SHOP_ITEMS;
+
+    if (currentShopCategory !== "featured") {
+        items = SHOP_ITEMS.filter(
+            item => item.category === currentShopCategory
+        );
+    }
+
+    container.innerHTML = "";
+
+    items.forEach(item => {
+        const card = document.createElement("div");
+
+        card.className = "shop-item";
+
+        card.innerHTML = `
+            <div class="shop-item-icon">🛍️</div>
+
+            <h3>${item.name}</h3>
+
+            <p>${item.description}</p>
+
+            <div class="shop-item-bottom">
+                <span>💰 ${item.price}</span>
+                <button onclick="buyShopItem('${item.id}')">
+                    Buy
+                </button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function buyShopItem(itemId) {
+    const item = SHOP_ITEMS.find(item => item.id === itemId);
+
+    if (!item || !currentUser) return;
+
+    const playerStats =
+        JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+    if (!playerStats[currentUser]) {
+        playerStats[currentUser] = {
+            played: 0,
+            wins: 0,
+            challenges: 0,
+            xp: 0,
+            money: 0
+        };
+    }
+
+    const stats = playerStats[currentUser];
+
+    if ((stats.money || 0) < item.price) {
+        alert("You don't have enough Money!");
+        return;
+    }
+
+    stats.money -= item.price;
+
+    playerStats[currentUser] = stats;
+
+    localStorage.setItem(
+        "gamehub_player_stats",
+        JSON.stringify(playerStats)
+    );
+
+    updateUserStatsDisplay();
+    loadShop();
+
+    alert(`You purchased ${item.name}!`);
 }
 
 // Listen for changes made in other tabs
