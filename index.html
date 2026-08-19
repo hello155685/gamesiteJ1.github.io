@@ -1729,21 +1729,25 @@
 
                 const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
 
-                friends.forEach(friend => {
-                    const stats = playerStats[friend] || { played: 0, wins: 0, challenges: 0 };
-                    const card = document.createElement("div");
-                    card.className = "friend-card";
-                    card.innerHTML = `
-                        <div class="friend-info">
-                            <div class="friend-avatar">${friend.charAt(0)}</div>
-                            <div>
-                                <strong>${friend}</strong>
-                                <div class="friend-stats">${stats.played} games • ${stats.wins} wins • ${stats.challenges || 0} challenges</div>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+           friends.forEach(friend => {
+    const stats = playerStats[friend] || { played: 0, wins: 0, challenges: 0 };
+    const card = document.createElement("div");
+    card.className = "friend-card";
+    card.innerHTML = `
+        <div class="friend-info">
+            <div class="friend-avatar">${friend.charAt(0).toUpperCase()}</div>
+            <div>
+                <strong>${friend}</strong>
+                <div class="friend-stats">${stats.played} games • ${stats.wins} wins • ${stats.challenges || 0} challenges</div>
+            </div>
+        </div>
+        <div class="action-btns">
+            <button class="btn-act" style="background-color: #3498db;" onclick="openPrivateChat('${friend}', '${friend}')">Chat</button>
+            <button class="btn-act" style="background-color: #e74c3c;" onclick="unfriendUser('${friend}')">Unfriend</button>
+        </div>
+    `;
+    container.appendChild(card);
+});
             } else if (currentFriendSubtab === "requests") {
                 if (requests.length === 0) {
                     container.innerHTML = "<p style='color: var(--subtext-color);'>No incoming friend requests.</p>";
@@ -1887,9 +1891,15 @@
         }
    let currentChatTarget = null;
 
-  // Notification Toast System
-  function showToast(message, durationSeconds = 4) {
-    const container = document.getElementById("toast-container");
+function showToast(message, durationSeconds = 4) {
+    let container = document.getElementById("toast-container");
+    
+    // Auto-create container if missing in HTML
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        document.body.appendChild(container);
+    }
     
     const toast = document.createElement("div");
     toast.className = "toast";
@@ -1897,29 +1907,35 @@
     
     container.appendChild(toast);
 
-    setTimeout(() => {
-      toast.classList.add("show");
-    }, 10);
+    setTimeout(() => { toast.classList.add("show"); }, 10);
 
     setTimeout(() => {
-      toast.classList.remove("show");
-      toast.addEventListener("transitionend", () => {
-        toast.remove();
-      });
+        toast.classList.remove("show");
+        toast.addEventListener("transitionend", () => toast.remove());
     }, durationSeconds * 1000);
-  }
+}
 
   // Unfriend Functionality
-  function unfriendUser(buttonElement, username) {
-    const card = buttonElement.closest(".friend-card") || buttonElement.parentElement;
-    card.remove();
-    
-    showToast(`Unfriended ${username}.`);
-    
+  function unfriendUser(username) {
+    if (!confirm(`Are you sure you want to remove ${username} from your friends?`)) return;
+
+    // Remove from user's list
+    let myFriends = getSavedFriends(currentUser);
+    myFriends = myFriends.filter(f => f !== username);
+    localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
+
+    // Remove user from target's list
+    let targetFriends = getSavedFriends(username);
+    targetFriends = targetFriends.filter(f => f !== currentUser);
+    localStorage.setItem("gamehub_friends_" + username, JSON.stringify(targetFriends));
+
     if (currentChatTarget && currentChatTarget.name === username) {
-      closePrivateChat();
+        closePrivateChat();
     }
-  }
+
+    showToast(`Unfriended ${username}.`);
+    loadFriendSubtabContent();
+}
 
   // Private Chat Functions
   function openPrivateChat(userId, username) {
