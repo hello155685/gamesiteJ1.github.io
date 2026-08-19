@@ -385,6 +385,68 @@
       ];
       return winCombos.some(combo => combo.every(idx => boardState[idx] === player));
     }
+
+    (function () {
+    // Get the logged-in GameHub username
+    const username = localStorage.getItem("gamehub_username");
+
+    // If nobody is logged in, don't give a reward
+    if (!username) {
+        console.log("GameHub: No logged-in user found. No reward given.");
+        return;
+    }
+
+    // Get existing player stats
+    const playerStats = JSON.parse(
+        localStorage.getItem("gamehub_player_stats")
+    ) || {};
+
+    // Create stats if this player doesn't have them yet
+    if (!playerStats[username]) {
+        playerStats[username] = {
+            played: 0,
+            wins: 0,
+            challenges: 0,
+            xp: 0,
+            money: 0
+        };
+    }
+
+    const stats = playerStats[username];
+
+    // Make sure the new stats exist for older accounts
+    stats.played = stats.played || 0;
+    stats.wins = stats.wins || 0;
+    stats.challenges = stats.challenges || 0;
+    stats.xp = stats.xp || 0;
+    stats.money = stats.money || 0;
+
+    // Give a random reward between 5 and 10
+    const xpReward = Math.floor(Math.random() * 6) + 5;
+    const moneyReward = Math.floor(Math.random() * 6) + 5;
+
+    // Add rewards
+    stats.played += 1;
+    stats.xp += xpReward;
+    stats.money += moneyReward;
+
+    // Save updated stats
+    playerStats[username] = stats;
+    localStorage.setItem(
+        "gamehub_player_stats",
+        JSON.stringify(playerStats)
+    );
+
+    // Let other tabs know the stats changed
+    window.dispatchEvent(new StorageEvent("storage", {
+        key: "gamehub_player_stats",
+        newValue: JSON.stringify(playerStats)
+    }));
+
+    console.log(
+        `GameHub: +${xpReward} XP, +${moneyReward} Money, +1 Game Played`
+    );
+})();
   </script>
 </body>
 </html>
