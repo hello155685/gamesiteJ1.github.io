@@ -1065,47 +1065,21 @@
                     </div>
                 </div>
 
-                
-                <!-- GLOBAL CHAT ROOM VIEW -->
-                <div id="global-chat-view" style="display: none;">
+                <!-- ANNOUNCEMENTS VIEW -->
+                <div id="announcements-view" style="display: none;">
                     <div class="header-bar">
                         <div class="header">
-                            <h1>Global Chat Room</h1>
-                            <p>Public live feed — Chat with everyone online!</p>
+                            <h1>Announcements</h1>
+                            <p>Latest announcements from the administration.</p>
                         </div>
                     </div>
 
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <h3>🌐 #public-lounge</h3>
-                        </div>
-                        <div class="chat-messages" id="global-chat-messages-container">
-                            <!-- Live messages stream here -->
-                        </div>
-                        <div class="chat-input-area">
-                            <input type="text" id="global-chat-input" placeholder="Say something in global chat...">
-                            <button onclick="sendGlobalMessage()">Send</button>
-                        </div>
+                    <div id="announcements-list">
+                        <p class="announcement-empty">
+                            No announcements yet.
+                        </p>
                     </div>
                 </div>
-
-            </main>
-
-        </div>
-    </div>
-
-    <div id="announcements-view" style="display: none;">
-    <div class="header">
-        <h1>Announcements</h1>
-        <p>Latest announcements from the administration.</p>
-    </div>
-
-    <div id="announcements-list">
-        <p style="color: var(--subtext-color);">
-            No announcements yet.
-        </p>
-    </div>
-</div>
 
             </main>
 
@@ -1148,7 +1122,6 @@
         📢 Announcements
     </button>
 </nav>
-                    </nav>
                 </div>
 
                 <div class="sidebar-bottom">
@@ -1186,7 +1159,7 @@
                         </table>
                     </div>
                 </div>
-
+                
 <!-- ADMIN CHATS VIEW -->
 <div id="admin-chats-view" style="display: none;">
 
@@ -1196,26 +1169,36 @@
             <p>Live stream of global public chat messages with timestamps</p>
         </div>
 
-        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">
+        <button
+            class="btn-identity-player"
+            onclick="switchToPlayerIdentity()"
+        >
             Switch To Player Identity
         </button>
     </div>
 
     <div class="chat-container">
+
         <div class="chat-header">
             <h3>👁️ Live Global Chat Logs</h3>
         </div>
 
-        <div class="chat-messages" id="admin-chat-messages-container">
-        </div>
+        <div
+            class="chat-messages"
+            id="admin-chat-messages-container"
+        ></div>
+
     </div>
 
-    <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
+    <div
+        class="chat-input-area"
+        style="margin-top: 15px; max-width: 700px;"
+    >
+
         <input
             type="text"
             id="admin-chat-input"
             placeholder="Broadcast message as Admin..."
-            style="flex: 1;"
         >
 
         <button
@@ -1227,10 +1210,19 @@
 
         <button
             onclick="resetGlobalChat()"
-            style="background-color: #e67e22; color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;"
+            style="
+                background-color: #e67e22;
+                color: white;
+                border: none;
+                padding: 0 15px;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+            "
         >
             Reset Chat
         </button>
+
     </div>
 
 </div>
@@ -1240,21 +1232,33 @@
 <div id="admin-private-chats-view" style="display: none;">
 
     <div class="header-bar">
+
         <div class="header">
             <h1>Private Chats</h1>
-            <p>View all private conversations between players. Admins can only read these chats.</p>
+            <p>
+                View all private conversations between players.
+                Admins can read but cannot send messages.
+            </p>
         </div>
 
-        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">
+        <button
+            class="btn-identity-player"
+            onclick="switchToPlayerIdentity()"
+        >
             Switch To Player Identity
         </button>
+
     </div>
 
+    <!-- PRIVATE CHAT LIST -->
     <div id="admin-private-chat-list-container">
-        <!-- Private chats appear here -->
     </div>
 
-    <div id="admin-private-chat-viewer" style="display: none; margin-top: 25px;">
+    <!-- READ ONLY CHAT VIEWER -->
+    <div
+        id="admin-private-chat-viewer"
+        style="display: none; margin-top: 25px;"
+    >
 
         <div class="chat-container">
 
@@ -1274,13 +1278,6 @@
     </div>
 
 </div>
-                    <!-- ADMIN CHAT CONTROLS -->
-                    <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
-                        <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin..." style="flex: 1;">
-                        <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
-                        <button onclick="resetGlobalChat()" style="background-color: #e67e22; color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Reset Chat</button>
-                    </div>
-                </div>
 
                 <!-- ADMIN STATS VIEW -->
                 <div id="admin-stats-view" style="display: none;">
