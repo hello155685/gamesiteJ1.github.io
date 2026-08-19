@@ -1,2375 +1,995 @@
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hub</title>
+    <title>GameHub</title>
     <style>
         :root {
-            --bg-color: #0f0f13;
-            --sidebar-bg: #1a1a24;
-            --card-bg: #1a1a24;
-            --border-color: #2a2a3a;
-            --text-color: #ffffff;
-            --subtext-color: #aaaaaa;
-            --accent-color: #6c5ce7;
-            --accent-hover: #5849c4;
-            --tag-bg: #252533;
-            --admin-accent: #ff4757;
-            --btn-kick: #e67e22;
-            --btn-ban: #e74c3c;
-            --btn-unban: #2ecc71;
-            --btn-mute: #f1c40f;
-        }
-
-        body.light-mode {
-            --bg-color: #f4f5f9;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --border-color: #e1e3ea;
-            --text-color: #1f1f2e;
-            --subtext-color: #6e7191;
-            --accent-color: #6c5ce7;
-            --accent-hover: #5849c4;
-            --tag-bg: #f0f1f7;
-            --admin-accent: #ff4757;
+            --bg-color: #1e1e2e;
+            --sidebar-bg: #181825;
+            --card-bg: #313244;
+            --text-color: #cdd6f4;
+            --subtext-color: #a6adc8;
+            --accent-color: #89b4fa;
+            --danger-color: #f38ba8;
+            --success-color: #a6e3a1;
+            --warning-color: #f9e2af;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            min-height: 100vh;
             display: flex;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* LOCK SCREEN */
-        #lock-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
             height: 100vh;
-            background-color: #0d0d11;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            overflow: hidden;
         }
 
-        .lock-container {
-            background-color: #1a1a24;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(108, 92, 231, 0.3);
-            border: 1px solid #6c5ce7;
-            width: 320px;
-            text-align: center;
-        }
-
-        .lock-container h2 {
-            margin-bottom: 20px;
-            color: #6c5ce7;
-        }
-
-        .lock-container input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background-color: #0f0f13;
-            color: #fff;
-            font-size: 15px;
-            text-align: center;
-            outline: none;
-        }
-
-        .lock-container button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            background-color: #6c5ce7;
-            color: #fff;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-
-        #error-msg {
-            color: #ff4d4d;
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
-        }
-
-        /* MAIN LAYOUTS */
-        #main-content, #admin-content {
-            display: none;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
+        /* Sidebar */
         .sidebar {
-            width: 260px;
+            width: 240px;
             background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 25px 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            padding: 20px 10px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .sidebar-brand {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 30px;
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--accent-color);
         }
 
-        .user-card {
-            background-color: var(--tag-bg);
-            padding: 12px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .user-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-        }
-
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
+        .sidebar-nav button {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s;
-        }
-
-        .nav-item.active {
-            background-color: var(--accent-color);
-            color: #ffffff;
-        }
-
-        .admin-nav .nav-item.active {
-            background-color: var(--admin-accent);
-        }
-
-        .sidebar-bottom {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .btn-sidebar {
+            padding: 12px;
+            margin-bottom: 8px;
             background: none;
             border: none;
-            color: var(--subtext-color);
-            padding: 10px;
+            color: var(--text-color);
             text-align: left;
-            cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 1rem;
             border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .btn-sidebar:hover {
-            color: var(--text-color);
-            background-color: var(--tag-bg);
+        .sidebar-nav button:hover, .sidebar-nav button.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .top-header {
+            height: 60px;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .user-stats-bar {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.stat-badge {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: bold;
-}
-
-/* Full-width Announcements layout */
-.announcements-container {
-    width: 100%;
-    max-height: calc(100vh - 180px);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px 0;
-}
-
-.announcement-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-left: 4px solid #f1c40f;
-    padding: 15px;
-    border-radius: 6px;
-}
-
-.announcement-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    color: var(--subtext-color);
-}
-
-.announcement-author {
-    color: #f1c40f;
-    font-weight: bold;
-}
-
-.announcement-body {
-    font-size: 1rem;
-    line-height: 1.4;
-    white-space: pre-wrap;
-}
-
-.read-only-notice {
-    margin-top: 10px;
-    font-style: italic;
-    color: var(--subtext-color);
-    font-size: 0.85rem;
-}
-
-.admin-announcement-box textarea {
-    width: 100%;
-    height: 100px;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.2);
-    color: #fff;
-}
-
-        /* MAIN CONTENT AREA */
-        .dashboard-content {
-            flex: 1;
-            padding: 40px;
-        }
-
-        .header-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
+            gap: 12px;
+            align-items: center;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            color: var(--subtext-color);
-        }
-
-        /* IDENTITY TOGGLE BUTTONS */
-        .btn-identity-player {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s;
-        }
-
-        .btn-identity-player:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-identity-admin {
-            background-color: var(--admin-accent);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: opacity 0.2s;
-        }
-
-        .btn-identity-admin:hover {
-            opacity: 0.9;
-        }
-
-        /* STATS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--accent-color);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: var(--subtext-color);
-            font-size: 0.85rem;
-        }
-
-        /* FILTER TAGS */
-        .filter-tags {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background-color: var(--tag-bg);
-            color: var(--subtext-color);
-            padding: 8px 18px;
+        .stat-badge {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .tag.active {
-            background-color: var(--accent-color);
-            color: white;
-        }
-
-        /* GAME GRID */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            text-decoration: none;
-            color: var(--text-color);
-            transition: transform 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-color);
-        }
-
-        .game-banner {
-            height: 140px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            background-color: var(--tag-bg);
-        }
-
-        .game-info {
-            padding: 20px;
-        }
-
-        .game-info h2 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-        }
-
-        .game-info p {
-            color: var(--subtext-color);
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        /* FRIENDS & SEARCH */
-        .search-box {
-            display: flex;
-            gap: 10px;
-            max-width: 600px;
-            margin-bottom: 25px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 18px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .btn-add-friend {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 8px;
             font-weight: bold;
-            cursor: pointer;
         }
 
-        .friends-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 600px;
+        .content-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Cards & Components */
+        .tab-content {
+            height: 100%;
         }
 
         .friend-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px 20px;
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
 
         .friend-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .friend-avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background-color: var(--accent-color);
-            color: white;
+            color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.1rem;
             text-transform: uppercase;
         }
 
         .friend-stats {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--subtext-color);
-            margin-top: 3px;
         }
 
-        /* LIVE CHAT INTERFACE */
-        .chat-container {
-            max-width: 700px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+        .action-btns button, .btn-act {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        /* Toast Container */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
-            height: 520px;
-            overflow: hidden;
+            gap: 10px;
         }
 
-        .chat-header {
-            padding: 15px 20px;
-            background-color: var(--tag-bg);
-            border-bottom: 1px solid var(--border-color);
+        .toast {
+            background-color: #313244;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Chat Window */
+        .chat-box {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-header h3 {
-            font-size: 1.1rem;
+            flex-direction: column;
+            height: calc(100vh - 150px);
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-        }
-
-        .chat-msg-row {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .chat-timestamp {
-            font-size: 0.75rem;
-            color: var(--subtext-color);
-            margin-right: 8px;
-        }
-
-        .chat-msg-user {
-            font-weight: bold;
-            color: var(--accent-color);
-            margin-right: 6px;
-        }
-
-        .chat-input-area {
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            outline: none;
-        }
-
-        .chat-input-area button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* ADMIN TABLES & LISTS */
-        .admin-table-container {
-            max-width: 900px;
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background-color: var(--card-bg);
-        }
-
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .admin-table th, .admin-table td {
-            padding: 14px 18px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .admin-table th {
-            position: sticky;
-            top: 0;
-            background-color: var(--tag-bg);
-            color: var(--subtext-color);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            z-index: 10;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .status-online {
-            background-color: rgba(0, 255, 204, 0.15);
-            color: #00ffcc;
-        }
-
-        .status-offline {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--subtext-color);
-        }
-
-        /* ADMIN ACTION BUTTONS */
-        .action-btns {
-            display: flex;
             gap: 8px;
-        }
-
-        .btn-act {
-            border: none;
-            padding: 6px 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-row input, .chat-input-row textarea {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             color: #fff;
-            transition: opacity 0.2s;
         }
 
-        .btn-act:hover {
-            opacity: 0.85;
+        .chat-input-row button {
+            padding: 10px 20px;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        .btn-act-kick {
-            background-color: var(--btn-kick);
+        .message {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
         }
 
-        .btn-act-ban {
-            background-color: var(--btn-ban);
-        }
-
-        .btn-act-unban {
-            background-color: var(--btn-unban);
-        }
-
-        .btn-act-mute {
-            background-color: var(--btn-mute);
+        .message.sent {
+            align-self: flex-end;
+            background-color: var(--accent-color);
             color: #000;
         }
 
-        .btn-act-muted {
-            background-color: #7f8c8d;
-            color: #fff;
+        .message.received {
+            align-self: flex-start;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
         }
-    /* Toast Notification Container */
-  .toast-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1000;
-  }
 
-  .toast {
-    background: #333;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    font-size: 14px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-  }
+        /* Announcements */
+        .announcements-container {
+            width: 100%;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px 0;
+        }
 
-  .toast.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
+        .announcement-card {
+            background: var(--card-bg);
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            border-radius: 6px;
+        }
 
-  /* Private Chat Window */
-  .chat-window {
-    background: #2a2a38;
-    border-radius: 10px;
-    padding: 15px;
-    width: 300px;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+        }
 
-  .chat-window.hidden {
-    display: none;
-  }
+        .announcement-author {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
 
-  .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-    color: #fff;
-  }
+        .announcement-body {
+            font-size: 1rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
 
-  .btn-close {
-    background: none;
-    border: none;
-    color: #aaa;
-    font-size: 20px;
-    cursor: pointer;
-  }
+        /* Admin Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    margin: 10px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-  .message {
-    background: #353548;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    max-width: 80%;
-  }
+        th {
+            color: var(--subtext-color);
+        }
 
-  .message.sent {
-    align-self: flex-end;
-    background: #4c6ef5;
-  }
+        .hidden { display: none !important; }
 
-  .chat-input-row {
-    display: flex;
-    gap: 8px;
-  }
+        .subtab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
 
-  .chat-input-row input {
-    flex: 1;
-    padding: 8px;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-  }
+        .subtab-bar button {
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: none;
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-  .btn-chat {
-    background-color: #4c6ef5;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  .btn-unfriend {
-    background-color: #fa5252;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-</style>
+        .subtab-bar button.active {
+            background: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- LOCK SCREEN / LOGIN -->
-    <div id="lock-screen">
-        <div class="lock-container">
-            <h2>Enter Game Hub</h2>
-            <input type="text" id="username-input" placeholder="Choose Username...">
-            <input type="password" id="password-input" placeholder="Password...">
-            <button onclick="checkPassword()">Enter Hub</button>
-            <p id="error-msg">Incorrect password, user active, or user banned!</p>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <h2>GameHub</h2>
+        <div class="sidebar-nav">
+            <button id="nav-games" class="active" onclick="switchTab('games')">🎮 Games</button>
+            <button id="nav-friends" onclick="switchTab('friends')">👥 Friends</button>
+            <button id="nav-global-chat" onclick="switchTab('global-chat')">💬 Global Chat</button>
+            <button id="nav-shop" onclick="switchTab('shop')">🛒 Shop</button>
+            <button id="nav-announcements" onclick="switchTab('announcements')">📢 Announcements</button>
+            <button id="admin-tab-btn" onclick="switchTab('admin')">⚙️ Admin Panel</button>
         </div>
     </div>
 
-    <!-- MAIN USER DASHBOARD -->
-    <div id="main-content">
-        <div class="app-container">
-            
-            <!-- USER SIDEBAR -->
-            <aside class="sidebar">
-                <div>
-                    -brand">🎮 Game Hub</div>
-                    
-                    <div class="user-card">
-                        <div class="user-avatar" id="display-avatar">P</div>
-                        <div>
-                            <strong id="display-username">Player</strong>
-                            <div style="font-size: 0.75rem; color: #00ffcc;">● Online</div>
-                        </div>
-                    </div>
-
-                    <nav class="nav-menu">
-                        <button id="nav-games" class="nav-item active" onclick="showTab('games')">🎮 Games</button>
-                        <button id="nav-friends" class="nav-item" onclick="showTab('friends')">👥 Friends</button>
-                        <button id="nav-global-chat" class="nav-item" onclick="showTab('global-chat')">💬 Global Chat</button>
-
-                        <!-- NEW SHOP BUTTON -->
-                        <button id="nav-shop" class="nav-item" onclick="showTab('shop')">Shop</button>
-
-                        <!-- NEW ANNOUNCEMENTS BUTTON (Below Shop) -->
-    <button id="nav-announcements" class="nav-item" onclick="showTab('announcements')">Announcements</button>
-                    </nav>
-                </div>
-
-                <div class="sidebar-bottom">
-                    <button class="btn-sidebar" onclick="toggleTheme()">☀️ / 🌙 Toggle Theme</button>
-                    <button class="btn-sidebar" onclick="lockSite()">🔒 Lock Site</button>
-                </div>
-            </aside>
-
-            <!-- USER DASHBOARD CONTENT -->
-            <main class="dashboard-content">
-
-                <!-- GAMES VIEW -->
-                <div id="games-view">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Welcome back, <span id="welcome-username">Player</span> 👋</h1>
-                            <p>Choose a game and start playing!</p>
-                        </div>
-                        <button id="switch-to-admin-btn" class="btn-identity-admin" style="display: none;" onclick="switchToAdminIdentity()">Switch To Admin Identity</button>
-                    </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-played">0</div>
-                            <div class="stat-label">Games Played</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-wins">0</div>
-                            <div class="stat-label">Wins</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-challenges">0</div>
-                            <div class="stat-label">Challenges</div>
-                        </div>
-                    </div>
-
-                    <div class="filter-tags">
-                        <div class="tag active">All</div>
-                        <div class="tag">Classic</div>
-                        <div class="tag">Strategy</div>
-                        <div class="tag">Quick</div>
-                    </div>
-
-                    <div class="game-grid">
-                        <a href="games/tictactoe/index.html" class="game-card">
-                            <div class="game-banner">❌⭕</div>
-                            <div class="game-info">
-                                <h2>Tic Tac Toe</h2>
-                                <p>The timeless classic — X vs O battle on a 3×3 grid.</p>
-                            </div>
-                        </a>
-
-                          <a href="games/2048/2048-master/index.html" class="game-card">
-                            <div class="game-banner">2048</div>
-                            <div class="game-info">
-                                <h2>2048</h2>
-                                <p>Play 2048</p>
-                            </div>
-                        </a>
-
-                         <a href="games/classic-snake/index.html" class="game-card">
-                            <div class="game-banner">🐍</div>
-                            <div class="game-info">
-                                <h2>Classic Snake</h2>
-                                <p>Play Classic Snake</p>
-                            </div>
-                        </a>
-
-                         <a href="games/trex-runner/index.html" class="game-card">
-                            <div class="game-banner">🦖</div>
-                            <div class="game-info">
-                                <h2>Trex Runner</h2>
-                                <p>Play T-Rex Runner</p>
-                            </div>
-                        </a>
-
-                          <a href="games/jolly-jumper/index.html" class="game-card">
-                            <div class="game-banner">🍭</div>
-                            <div class="game-info">
-                                <h2>Jolly Jumper</h2>
-                                <p>Play Jolly Jumper</p>
-                            </div>
-                        </a>
-
-                         <a href="games/memory/index.html" class="game-card">
-                            <div class="game-banner">🧠</div>
-                            <div class="game-info">
-                                <h2>Memory Game</h2>
-                                <p>Play a Memory Game</p>
-                            </div>
-                        </a>
-
-                         <a href="games/asteroids/asteroids-main/index.html" class="game-card">
-                            <div class="game-banner">☄️</div>
-                            <div class="game-info">
-                                <h2>Asteroids</h2>
-                                <p>Play Asteroids</p>
-                            </div>
-                        </a>
-
-                        <a href="games/rivals/index.html" class="game-card">
-                            <div class="game-banner">🏓</div>
-                            <div class="game-info">
-                                <h2>Rivals</h2>
-                                <p>Loot the Map, Fight your Enemies</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- FRIENDS VIEW -->
-                <div id="friends-view" style="display: none;">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Friends</h1>
-                            <p>Search and manage friend requests</p>
-                        </div>
-                    </div>
-
-                    <div class="search-box">
-                        <input type="text" id="friend-search-input" class="search-input" placeholder="🔍 Search or add username...">
-                        <button class="btn-add-friend" onclick="sendFriendRequest()">Send Request</button>
-                    </div>
-
-                    <div class="filter-tags">
-                        <div id="friend-subtab-friends" class="tag active" onclick="switchFriendSubtab('friends')">Friends (<span id="friend-count">0</span>)</div>
-                        <div id="friend-subtab-requests" class="tag" onclick="switchFriendSubtab('requests')">Requests (<span id="request-count">0</span>)</div>
-                        <div id="friend-subtab-sent" class="tag" onclick="switchFriendSubtab('sent')">Sent (<span id="sent-count">0</span>)</div>
-                    </div>
-
-                    <div class="friends-list" id="friends-list-container">
-                        <!-- Content populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- GLOBAL CHAT ROOM VIEW -->
-                <div id="global-chat-view" style="display: none;">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Global Chat Room</h1>
-                            <p>Public live feed — Chat with everyone online!</p>
-                        </div>
-                    </div>
-
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <h3>🌐 #public-lounge</h3>
-                        </div>
-                        <div class="chat-messages" id="global-chat-messages-container">
-                            <!-- Live messages stream here -->
-                        </div>
-                        <div class="chat-input-area">
-                            <input type="text" id="global-chat-input" placeholder="Say something in global chat...">
-                            <button onclick="sendGlobalMessage()">Send</button>
-                        </div>
-                    </div>
-                </div>
-
-            </main>
-
-        </div>
-    </div>
-
-    <!-- ADMIN PANEL DASHBOARD -->
-    <div id="admin-content">
-        <div class="app-container">
-            
-            <!-- ADMIN SIDEBAR -->
-            <aside class="sidebar">
-                <div>
-                    <div class="sidebar-brand" style="color: var(--admin-accent);">🛡️ Admin Panel</div>
-                    
-                    <div class="user-card" style="border: 1px solid var(--admin-accent);">
-                        <div class="user-avatar" style="background-color: var(--admin-accent);">A</div>
-                        <div>
-                            <strong>jadminj1</strong>
-                            <div style="font-size: 0.75rem; color: var(--admin-accent);">● Admin Root</div>
-                        </div>
-                    </div>
-
-                    <nav class="nav-menu admin-nav">
-                        <button id="admin-nav-players" class="nav-item active" onclick="showAdminTab('players')">👤 Players</button>
-                        <button id="admin-nav-chats" class="nav-item" onclick="showAdminTab('chats')">💬 Chats</button>
-                        <button id="admin-nav-stats" class="nav-item" onclick="showAdminTab('stats')">📊 Stats</button>
-                        <button id="admin-nav-action" class="nav-item" onclick="showAdminTab('action')">⚡ Action</button>
-                        <button id="admin-tab-btn" class="nav-item" onclick="showAdminTab('admin')">Admin Panel</button>
-                    </nav>
-                </div>
-
-                <div class="sidebar-bottom">
-                    <button class="btn-sidebar" onclick="toggleTheme()">☀️ / 🌙 Toggle Theme</button>
-                    <button class="btn-sidebar" onclick="lockSite()">🔒 Exit Admin</button>
-                </div>
-            </aside>
-
-            <!-- ADMIN CONTENT AREA -->
-            <main class="dashboard-content">
-
-                <!-- ADMIN PLAYERS VIEW -->
-                <div id="admin-players-view">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Player Directory</h1>
-                            <p>View active online players and offline account files</p>
-                        </div>
-                        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
-                    </div>
-
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Status</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-players-list">
-                                <!-- Players populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN CHATS VIEW -->
-                <div id="admin-chats-view" style="display: none;">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Global Chat Monitor</h1>
-                            <p>Live stream of global public chat messages with timestamps</p>
-                        </div>
-                        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
-                    </div>
-
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <h3>👁️ Live Global Chat Logs</h3>
-                        </div>
-                        <div class="chat-messages" id="admin-chat-messages-container">
-                            <!-- Admin stream of chat messages -->
-                        </div>
-                    </div>
-
-                    <!-- ADMIN CHAT CONTROLS -->
-                    <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
-                        <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin..." style="flex: 1;">
-                        <button onclick="sendAdminMessage()" style="background-color: var(--admin-accent);">Send as Admin</button>
-                        <button onclick="resetGlobalChat()" style="background-color: #e67e22; color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Reset Chat</button>
-                    </div>
-                </div>
-
-                <!-- ADMIN STATS VIEW -->
-                <div id="admin-stats-view" style="display: none;">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Global Player Stats</h1>
-                            <p>Overview of wins, played games, and challenges across all registered users</p>
-                        </div>
-                        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
-                    </div>
-
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
-                                    <th>Games Played</th>
-                                    <th>Wins</th>
-                                    <th>Challenges</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-stats-list">
-                                <!-- Stats populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN ACTION VIEW -->
-                <div id="admin-action-view" style="display: none;">
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Admin Actions</h1>
-                            <p>Perform management actions (Kick, Ban, Mute) on registered players</p>
-                        </div>
-                        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
-                    </div>
-
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Player</th>
-                                    <th>Rank</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-action-list">
-                                <!-- Action player rows dynamically loaded -->
-                            </tbody>
-                            <!-- Update Admin Stats Table Header -->
-<thead>
-    <tr>
-        <th>Player</th>
-        <th>Played</th>
-        <th>Wins</th>
-        <th>Challenges</th>
-        <th>Money</th>
-        <th>XP</th>
-    </tr>
-</thead>
-<tbody id="admin-stats-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </main>
-
-        </div>
-    </div>
-
-    <!-- SHOP VIEW -->
-<div id="shop-view" class="tab-content" style="display: none;">
-    <h2>Shop</h2>
-    <div class="shop-grid">
-        <div class="shop-item">
-            <h3>2x XP Boost</h3>
-            <p>Cost: 100 Money</p>
-            <button onclick="buyShopItem('xpBoost', 100)">Buy</button>
-        </div>
-        <!-- Add more shop items here -->
-    </div>
-</div>
-
-<!-- PUBLIC ANNOUNCEMENTS VIEW -->
-<div id="announcements-view" class="tab-content" style="display: none; height: 100%;">
-    <h2>Announcements</h2>
-    <div id="public-announcements-list" class="announcements-container"></div>
-    <p class="read-only-notice">📢 Only Administrators can post announcements.</p>
-</div>
-
-        <!-- Toast Container for Notifications -->
-<div id="toast-container" class="toast-container"></div>
-
-<!-- Private Chat Window -->
-<div id="private-chat" class="chat-window hidden">
-  <div class="chat-header">
-    <span id="chat-target-name">Chatting with...</span>
-    <button class="btn-close" onclick="closePrivateChat()">&times;</button>
-  </div>
-  <div id="chat-messages" class="chat-messages"></div>
-  <div class="chat-input-row">
-    <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="handleChatInput(event)">
-    <button class="btn-chat" onclick="sendPrivateMessage()">Send</button>
-  </div>
-</div>
-
-    <!-- JAVASCRIPT -->
-    <script>
-        const ALLOWED_PASSWORDS = ["1test1", "secrt", "!BYPASS!", "jgem1"];
-        const ADMIN_USERNAMES = ["jadminj1"];
-        const ADMIN_EXCLUSIVE_PASSWORD = "JadminJ1";
-        let currentUser = "";
-        let currentFriendSubtab = "friends";
-        let inactivityTimer = null;
-
-        // Disable Right Click
-        document.addEventListener('contextmenu', function(event) {
-            event.preventDefault();
-        });
-
-        // DETECT TAB CLOSING OR REFRESH
-        window.addEventListener('beforeunload', function() {
-            if (currentUser) {
-                removeActiveUser(currentUser);
-            }
-        });
-
-        // RESET INACTIVITY TIMER ON USER INTERACTIONS
-        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
-            document.addEventListener(evt, resetInactivityTimer, true);
-        });
-
-        function resetInactivityTimer() {
-            if (!currentUser) return;
-            clearTimeout(inactivityTimer);
-            updateHeartbeat(currentUser);
-            
-            // Auto logout after 4 minutes (240000 ms) of inactivity
-            inactivityTimer = setTimeout(() => {
-                if (currentUser) {
-                    alert("Logged out due to 4 minutes of inactivity.");
-                    lockSite();
-                }
-            }, 240000);
-        }
-
-        // LISTEN FOR REAL-TIME EVENTS ACROSS TABS
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'gamehub_kicked_signal') {
-                try {
-                    const kickData = JSON.parse(e.newValue);
-                    if (kickData && kickData.user === currentUser) {
-                        alert("You have been kicked by an administrator.");
-                        lockSite();
-                    }
-                } catch(err) {}
-            } else if (e.key === 'gamehub_global_chat') {
-                loadGlobalMessages();
-            } else if (e.key === 'gamehub_banned_players') {
-                checkBanStatus();
-            } else if (e.key === 'gamehub_player_stats') {
-                updateUserStatsDisplay();
-            } else if (e.key.startsWith('gamehub_friend_requests_') || e.key.startsWith('gamehub_friends_')) {
-                loadFriendSubtabContent();
-            }
-        });
-
-        // 5-SECOND CHECK & AUTO REFRESH
-        setInterval(() => {
-            cleanExpiredSessions();
-            cleanExpiredBans();
-            if (currentUser) {
-                updateHeartbeat(currentUser);
-            }
-            loadGlobalMessages();
-        }, 5000);
-
-        // INITIALIZE
-        window.addEventListener("DOMContentLoaded", () => {
-            cleanExpiredBans();
-            cleanExpiredSessions();
-
-            const savedUser = localStorage.getItem("gamehub_username");
-            if (savedUser) {
-                document.getElementById("username-input").value = savedUser;
-            }
-
-            document.getElementById("password-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") checkPassword();
-            });
-
-            document.getElementById("friend-search-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") sendFriendRequest();
-            });
-
-            document.getElementById("global-chat-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") sendGlobalMessage();
-            });
-
-            document.getElementById("admin-chat-input").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") sendAdminMessage();
-            });
-        });
-
-        function isUserBanned(username) {
-            if (ADMIN_USERNAMES.includes(username.toLowerCase())) {
-                return false; // Admins can never be banned
-            }
-            cleanExpiredBans();
-            const bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
-            return !!bans[username];
-        }
-
-        function cleanExpiredBans() {
-            let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
-            const now = Date.now();
-            let changed = false;
-
-            for (let player in bans) {
-                if (now > bans[player]) {
-                    delete bans[player];
-                    changed = true;
-                }
-            }
-
-            if (changed) {
-                localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
-                if (document.getElementById("admin-content").style.display === "block") {
-                    loadAdminData();
-                }
-            }
-        }
-
-        function updateHeartbeat(username) {
-            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            activeSessions[username] = Date.now();
-            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
-        }
-
-        function isUserActive(username) {
-            cleanExpiredSessions();
-            const activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            return !!activeSessions[username];
-        }
-
-        function cleanExpiredSessions() {
-            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            const now = Date.now();
-            let changed = false;
-
-            for (let player in activeSessions) {
-                if (now - activeSessions[player] > 10000) {
-                    delete activeSessions[player];
-                    changed = true;
-                }
-            }
-
-            if (changed) {
-                localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
-                if (document.getElementById("admin-content").style.display === "block") {
-                    loadAdminData();
-                }
-            }
-        }
-
-        function removeActiveUser(username) {
-            if (!username) return;
-            let activeSessions = JSON.parse(localStorage.getItem("gamehub_active_sessions")) || {};
-            delete activeSessions[username];
-            localStorage.setItem("gamehub_active_sessions", JSON.stringify(activeSessions));
-        }
-
-        function checkPassword() {
-            const userVal = document.getElementById("username-input").value.trim();
-            const passVal = document.getElementById("password-input").value;
-            const errorMsg = document.getElementById("error-msg");
-
-            if (!userVal) {
-                errorMsg.innerText = "Please enter a username!";
-                errorMsg.style.display = "block";
-                return;
-            }
-
-            const isAdminUser = ADMIN_USERNAMES.includes(userVal.toLowerCase());
-
-            if (isAdminUser) {
-                if (passVal !== ADMIN_EXCLUSIVE_PASSWORD) {
-                    errorMsg.innerText = "Incorrect Admin password!";
-                    errorMsg.style.display = "block";
-                    return;
-                }
-            } else {
-                if (!ALLOWED_PASSWORDS.includes(passVal)) {
-                    errorMsg.innerText = "Incorrect password!";
-                    errorMsg.style.display = "block";
-                    return;
-                }
-            }
-
-            if (isUserBanned(userVal)) {
-                errorMsg.innerText = "This username is banned! Try again later.";
-                errorMsg.style.display = "block";
-                return;
-            }
-
-            if (isUserActive(userVal)) {
-                errorMsg.innerText = "This username is already currently logged in!";
-                errorMsg.style.display = "block";
-                return;
-            }
-
-            currentUser = userVal;
-            localStorage.setItem("gamehub_username", currentUser);
-            updateHeartbeat(currentUser);
-            registerUserInDirectory(currentUser);
-            resetInactivityTimer();
-
-            document.getElementById("lock-screen").style.display = "none";
-
-            if (isAdminUser) {
-                document.getElementById("admin-content").style.display = "block";
-                document.getElementById("main-content").style.display = "none";
-                loadAdminData();
-            } else {
-                document.getElementById("main-content").style.display = "block";
-                document.getElementById("admin-content").style.display = "none";
-
-                document.getElementById("display-username").innerText = currentUser;
-                document.getElementById("welcome-username").innerText = currentUser;
-                document.getElementById("display-avatar").innerText = currentUser.charAt(0);
-                document.getElementById("switch-to-admin-btn").style.display = "none";
-
-                updateUserStatsDisplay();
-                loadFriendSubtabContent();
-            }
-        }
-
-        // IDENTITY SWITCHING FUNCTIONS
-        function switchToPlayerIdentity() {
-            document.getElementById("admin-content").style.display = "none";
-            document.getElementById("main-content").style.display = "block";
-
-            document.getElementById("display-username").innerText = currentUser;
-            document.getElementById("welcome-username").innerText = currentUser;
-            document.getElementById("display-avatar").innerText = currentUser.charAt(0);
-            
-            // Show red Switch to Admin Identity button
-            document.getElementById("switch-to-admin-btn").style.display = "block";
-
-            updateUserStatsDisplay();
-            loadFriendSubtabContent();
-        }
-
-        function switchToAdminIdentity() {
-            document.getElementById("main-content").style.display = "none";
-            document.getElementById("admin-content").style.display = "block";
-            loadAdminData();
-        }
-
-        function updateUserStatsDisplay() {
-            if (!currentUser) return;
-            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            const stats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0 };
-            
-            const playedEl = document.getElementById("user-stat-played");
-            const winsEl = document.getElementById("user-stat-wins");
-            const challengesEl = document.getElementById("user-stat-challenges");
-
-            if (playedEl) playedEl.innerText = stats.played;
-            if (winsEl) winsEl.innerText = stats.wins;
-            if (challengesEl) challengesEl.innerText = stats.challenges || 0;
-        }
-
-        function registerUserInDirectory(username) {
-            let directory = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
-            if (!directory.includes(username)) {
-                directory.push(username);
-                localStorage.setItem("gamehub_all_players", JSON.stringify(directory));
-            }
-        }
-
-        function checkBanStatus() {
-            if (currentUser && isUserBanned(currentUser)) {
-                alert("You have been banned for 3 minutes.");
-                lockSite();
-            }
-        }
-
-        function lockSite() {
-            clearTimeout(inactivityTimer);
-            removeActiveUser(currentUser);
-            currentUser = "";
-            document.getElementById("main-content").style.display = "none";
-            document.getElementById("admin-content").style.display = "none";
-            document.getElementById("lock-screen").style.display = "flex";
-            document.getElementById("password-input").value = "";
-            document.getElementById("error-msg").style.display = "none";
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle("light-mode");
-        }
-
-        // USER TAB SWITCHING
-        function showTab(tabName) {
-            document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
-            document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
-            document.getElementById("global-chat-view").style.display = tabName === 'global-chat' ? "block" : "none";
-
-            document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
-            document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
-            document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
-
-            if (tabName === 'friends') {
-                loadFriendSubtabContent();
-            } else if (tabName === 'global-chat') {
-                loadGlobalMessages();
-            }
-        }
-
-        // ADMIN TAB SWITCHING
-        function showAdminTab(tabName) {
-            document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
-            document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
-            document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
-            document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
-
-            document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
-            document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
-            document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
-            document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
-
-            if (tabName === 'chats') {
-                loadGlobalMessages();
-            }
-        }
-
-        function loadAdminData() {
-            cleanExpiredBans();
-            cleanExpiredSessions();
-            const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
-            const playersTable = document.getElementById("admin-players-list");
-            const statsTable = document.getElementById("admin-stats-list");
-            const actionTable = document.getElementById("admin-action-list");
-
-            playersTable.innerHTML = "";
-            statsTable.innerHTML = "";
-            actionTable.innerHTML = "";
-
-            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
-            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-
-            players.forEach(player => {
-                const isOnline = isUserActive(player);
-                const isAdmin = ADMIN_USERNAMES.includes(player.toLowerCase());
-                const isBanned = isUserBanned(player);
-                const isMuted = mutedPlayers.includes(player);
-                
-                const currentStats = playerStats[player] || { played: 0, wins: 0, challenges: 0 };
-
-                // Players Row
-                const pRow = document.createElement("tr");
-                pRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? 'Online' : 'Offline'}</span></td>
-                    <td>${isAdmin ? 'Admin' : 'Player'}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-act" style="background-color: #3498db;" onclick="changePlayerData('${player}')">Change Player</button>
-                            <button class="btn-act" style="background-color: #c0392b;" onclick="removePlayerData('${player}')">Remove Data</button>
-                        </div>
-                    </td>
-                `;
-                playersTable.appendChild(pRow);
-
-                // Stats Row with Challenges Column
-                const sRow = document.createElement("tr");
-                sRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td>${currentStats.played}</td>
-                    <td>${currentStats.wins}</td>
-                    <td>${currentStats.challenges || 0}</td>
-                `;
-                statsTable.appendChild(sRow);
-
-                // Action Row with Admin Protection
-                const actionButtons = isAdmin 
-                    ? `<span style="color: var(--subtext-color); font-size: 0.85rem; font-style: italic;">Protected Admin</span>`
-                    : `<div class="action-btns">
-                        <button class="btn-act btn-act-kick" onclick="kickPlayer('${player}')">Kick</button>
-                        <button class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${player}')">${isBanned ? 'Unban' : 'Ban'}</button>
-                        <button class="btn-act ${isMuted ? 'btn-act-muted' : 'btn-act-mute'}" onclick="toggleMute('${player}')">${isMuted ? 'Muted' : 'Mute'}</button>
-                       </div>`;
-
-                const aRow = document.createElement("tr");
-                aRow.innerHTML = `
-                    <td><strong>${player}</strong></td>
-                    <td>${isAdmin ? 'Admin' : 'Member'}</td>
-                    <td>${actionButtons}</td>
-                `;
-                actionTable.appendChild(aRow);
-            });
-        }
-
-        function changePlayerData(targetUser) {
-            const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`);
-            
-            if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
-                alert("Incorrect admin password! Action canceled.");
-                return;
-            }
-
-            let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            let currentStats = playerStats[targetUser] || { played: 0, wins: 0, challenges: 0 };
-
-            const newPlayed = prompt(`Enter new 'Games Played' count for ${targetUser}:`, currentStats.played);
-            if (newPlayed === null) return;
-
-            const newWins = prompt(`Enter new 'Wins' count for ${targetUser}:`, currentStats.wins);
-            if (newWins === null) return;
-
-            const newChallenges = prompt(`Enter new 'Challenges' count for ${targetUser}:`, currentStats.challenges || 0);
-            if (newChallenges === null) return;
-
-            playerStats[targetUser] = {
-                played: parseInt(newPlayed, 10) || 0,
-                wins: parseInt(newWins, 10) || 0,
-                challenges: parseInt(newChallenges, 10) || 0
-            };
-
-            localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-            alert(`Updated stats live for ${targetUser}!`);
-            loadAdminData();
-            updateUserStatsDisplay();
-        }
-
-        function removePlayerData(targetUser) {
-            const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to REMOVE ALL DATA for ${targetUser}:`);
-
-            if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
-                alert("Incorrect admin password! Action canceled.");
-                return;
-            }
-
-            if (!confirm(`Are you sure you want to permanently delete data for ${targetUser}?`)) {
-                return;
-            }
-
-            let players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
-            players = players.filter(p => p !== targetUser);
-            localStorage.setItem("gamehub_all_players", JSON.stringify(players));
-
-            localStorage.removeItem("gamehub_friends_" + targetUser);
-            localStorage.removeItem("gamehub_friend_requests_" + targetUser);
-            localStorage.removeItem("gamehub_friend_sent_" + targetUser);
-
-            let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            delete playerStats[targetUser];
-            localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-
-            kickPlayer(targetUser);
-
-            alert(`All data for ${targetUser} has been removed.`);
-            loadAdminData();
-        }
-
-        function kickPlayer(targetUser) {
-            removeActiveUser(targetUser);
-            localStorage.setItem("gamehub_kicked_signal", JSON.stringify({ user: targetUser, time: Date.now() }));
-            
-            if (targetUser === currentUser) {
-                alert("You have been kicked by an administrator.");
-                lockSite();
-            } else {
-                alert(`Kick signal sent for ${targetUser}.`);
-            }
-            loadAdminData();
-        }
-
-        function toggleBan(targetUser) {
-            if (ADMIN_USERNAMES.includes(targetUser.toLowerCase())) {
-                alert("Admin accounts cannot be banned!");
-                return;
-            }
-
-            let bans = JSON.parse(localStorage.getItem("gamehub_banned_map")) || {};
-            if (bans[targetUser]) {
-                delete bans[targetUser];
-            } else {
-                bans[targetUser] = Date.now() + 180000;
-                kickPlayer(targetUser);
-            }
-            localStorage.setItem("gamehub_banned_map", JSON.stringify(bans));
-            localStorage.setItem("gamehub_banned_players", JSON.stringify(Object.keys(bans)));
-            loadAdminData();
-        }
-
-        function toggleMute(targetUser) {
-            let mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
-            if (mutedPlayers.includes(targetUser)) {
-                mutedPlayers = mutedPlayers.filter(p => p !== targetUser);
-            } else {
-                mutedPlayers.push(targetUser);
-            }
-            localStorage.setItem("gamehub_muted_players", JSON.stringify(mutedPlayers));
-            loadAdminData();
-        }
-
-        // FRIENDS & REQUESTS SYSTEM
-        function getSavedFriends(user) {
-            return JSON.parse(localStorage.getItem("gamehub_friends_" + (user || currentUser))) || [];
-        }
-
-        function getFriendRequests(user) {
-            return JSON.parse(localStorage.getItem("gamehub_friend_requests_" + (user || currentUser))) || [];
-        }
-
-        function getSentRequests(user) {
-            return JSON.parse(localStorage.getItem("gamehub_friend_sent_" + (user || currentUser))) || [];
-        }
-
-        function switchFriendSubtab(subtab) {
-            currentFriendSubtab = subtab;
-            document.getElementById("friend-subtab-friends").classList.toggle("active", subtab === 'friends');
-            document.getElementById("friend-subtab-requests").classList.toggle("active", subtab === 'requests');
-            document.getElementById("friend-subtab-sent").classList.toggle("active", subtab === 'sent');
-            loadFriendSubtabContent();
-        }
-
-        function sendFriendRequest() {
-            const searchInput = document.getElementById("friend-search-input");
-            const targetUser = searchInput.value.trim();
-
-            if (!targetUser || targetUser === currentUser) {
-                alert("Enter a valid username other than yourself!");
-                return;
-            }
-
-            let friends = getSavedFriends(currentUser);
-            if (friends.includes(targetUser)) {
-                alert(`${targetUser} is already your friend!`);
-                searchInput.value = "";
-                return;
-            }
-
-            let sent = getSentRequests(currentUser);
-            if (sent.includes(targetUser)) {
-                alert(`Friend request already sent to ${targetUser}!`);
-                searchInput.value = "";
-                return;
-            }
-
-            let requests = getFriendRequests(targetUser);
-            if (!requests.includes(currentUser)) {
-                requests.push(currentUser);
-                localStorage.setItem("gamehub_friend_requests_" + targetUser, JSON.stringify(requests));
-            }
-
-            sent.push(targetUser);
-            localStorage.setItem("gamehub_friend_sent_" + currentUser, JSON.stringify(sent));
-
-            registerUserInDirectory(targetUser);
-            alert(`Friend request sent to ${targetUser}!`);
-            searchInput.value = "";
-            loadFriendSubtabContent();
-        }
-
-        function acceptFriendRequest(sender) {
-            let requests = getFriendRequests(currentUser);
-            requests = requests.filter(r => r !== sender);
-            localStorage.setItem("gamehub_friend_requests_" + currentUser, JSON.stringify(requests));
-
-            let sent = getSentRequests(sender);
-            sent = sent.filter(s => s !== currentUser);
-            localStorage.setItem("gamehub_friend_sent_" + sender, JSON.stringify(sent));
-
-            let myFriends = getSavedFriends(currentUser);
-            if (!myFriends.includes(sender)) {
-                myFriends.push(sender);
-                localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
-            }
-
-            let senderFriends = getSavedFriends(sender);
-            if (!senderFriends.includes(currentUser)) {
-                senderFriends.push(currentUser);
-                localStorage.setItem("gamehub_friends_" + sender, JSON.stringify(senderFriends));
-            }
-
-            loadFriendSubtabContent();
-        }
-
-        function denyFriendRequest(sender) {
-            let requests = getFriendRequests(currentUser);
-            requests = requests.filter(r => r !== sender);
-            localStorage.setItem("gamehub_friend_requests_" + currentUser, JSON.stringify(requests));
-
-            let sent = getSentRequests(sender);
-            sent = sent.filter(s => s !== currentUser);
-            localStorage.setItem("gamehub_friend_sent_" + sender, JSON.stringify(sent));
-
-            loadFriendSubtabContent();
-        }
-
-        function cancelSentRequest(target) {
-            let sent = getSentRequests(currentUser);
-            sent = sent.filter(s => s !== target);
-            localStorage.setItem("gamehub_friend_sent_" + currentUser, JSON.stringify(sent));
-
-            let requests = getFriendRequests(target);
-            requests = requests.filter(r => r !== currentUser);
-            localStorage.setItem("gamehub_friend_requests_" + target, JSON.stringify(requests));
-
-            loadFriendSubtabContent();
-        }
-
-        
-
-        function loadFriendSubtabContent() {
-            const container = document.getElementById("friends-list-container");
-            const friends = getSavedFriends(currentUser);
-            const requests = getFriendRequests(currentUser);
-            const sent = getSentRequests(currentUser);
-
-            document.getElementById("friend-count").innerText = friends.length;
-            document.getElementById("request-count").innerText = requests.length;
-            document.getElementById("sent-count").innerText = sent.length;
-
-            container.innerHTML = "";
-
-            if (currentFriendSubtab === "friends") {
-                if (friends.length === 0) {
-                    container.innerHTML = "<p style='color: var(--subtext-color);'>No friends added yet. Send a request above!</p>";
-                    return;
-                }
-
-                const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-
-           friends.forEach(friend => {
-    const stats = playerStats[friend] || { played: 0, wins: 0, challenges: 0 };
-    const card = document.createElement("div");
-    card.className = "friend-card";
-    card.innerHTML = `
-        <div class="friend-info">
-            <div class="friend-avatar">${friend.charAt(0).toUpperCase()}</div>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Top Bar Header -->
+        <div class="top-header">
             <div>
-                <strong>${friend}</strong>
-                <div class="friend-stats">${stats.played} games • ${stats.wins} wins • ${stats.challenges || 0} challenges</div>
+                <strong id="current-user-display">User: Guest</strong>
+            </div>
+            <div class="user-stats-bar">
+                <span class="stat-badge">💰 Money: <strong id="header-money">0</strong></span>
+                <span class="stat-badge">⭐ XP: <strong id="header-xp">0</strong></span>
             </div>
         </div>
-        <div class="action-btns">
-            <button class="btn-act" style="background-color: #3498db;" onclick="openPrivateChat('${friend}', '${friend}')">Chat</button>
-            <button class="btn-act" style="background-color: #e74c3c;" onclick="unfriendUser('${friend}')">Unfriend</button>
-        </div>
-    `;
-    container.appendChild(card);
-});
-            } else if (currentFriendSubtab === "requests") {
-                if (requests.length === 0) {
-                    container.innerHTML = "<p style='color: var(--subtext-color);'>No incoming friend requests.</p>";
-                    return;
-                }
 
-                requests.forEach(sender => {
-                    const card = document.createElement("div");
-                    card.className = "friend-card";
-                    card.innerHTML = `
-                        <div class="friend-info">
-                            <div class="friend-avatar">${sender.charAt(0)}</div>
-                            <div>
-                                <strong>${sender}</strong>
-                                <div class="friend-stats">Wants to add you as a friend</div>
-                            </div>
-                        </div>
-                        <div class="action-btns">
-                            <button class="btn-act" style="background-color: #2ecc71;" onclick="acceptFriendRequest('${sender}')">Accept</button>
-                            <button class="btn-act" style="background-color: #e74c3c;" onclick="denyFriendRequest('${sender}')">Deny</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } else if (currentFriendSubtab === "sent") {
-                if (sent.length === 0) {
-                    container.innerHTML = "<p style='color: var(--subtext-color);'>No pending sent requests.</p>";
-                    return;
-                }
-
-                sent.forEach(target => {
-                    const card = document.createElement("div");
-                    card.className = "friend-card";
-                    card.innerHTML = `
-                        <div class="friend-info">
-                            <div class="friend-avatar">${target.charAt(0)}</div>
-                            <div>
-                                <strong>${target}</strong>
-                                <div class="friend-stats">Request pending...</div>
-                            </div>
-                        </div>
-                        <div class="action-btns">
-                            <button class="btn-act" style="background-color: #e67e22;" onclick="cancelSentRequest('${target}')">Cancel</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            }
-        }
-
-        // GLOBAL CHAT ROOM SYSTEM WITH TIMESTAMPS
-        function loadGlobalMessages() {
-            const userContainer = document.getElementById("global-chat-messages-container");
-            const adminContainer = document.getElementById("admin-chat-messages-container");
-            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-
-            let userHtml = "";
-            let adminHtml = "";
-
-            messages.forEach(msg => {
-                const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
-                
-                const senderLabel = isAdmin 
-                    ? `<span style="color: #ff4757; font-weight: bold;">[Admin] ${msg.sender}:</span>` 
-                    : `<span class="chat-msg-user">${msg.sender}:</span>`;
-
-                userHtml += `<div class="chat-msg-row">${senderLabel} ${msg.text}</div>`;
-                adminHtml += `<div class="chat-msg-row"><span class="chat-timestamp">[${msg.time}]</span> ${senderLabel} ${msg.text}</div>`;
-            });
-
-            if (userContainer) {
-                userContainer.innerHTML = userHtml;
-                userContainer.scrollTop = userContainer.scrollHeight;
-            }
-            if (adminContainer) {
-                adminContainer.innerHTML = adminHtml;
-                adminContainer.scrollTop = adminContainer.scrollHeight;
-            }
-        }
-
-        function sendGlobalMessage() {
-            const mutedPlayers = JSON.parse(localStorage.getItem("gamehub_muted_players")) || [];
-            if (mutedPlayers.includes(currentUser)) {
-                alert("You are muted by an admin and cannot send messages.");
-                return;
-            }
-
-            const input = document.getElementById("global-chat-input");
-            const text = input.value.trim();
-            if (text === "") return;
-
-            const timeString = new Date().toLocaleTimeString([], { hour12: false });
-            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+        <!-- Content Body -->
+        <div class="content-body">
             
-            messages.push({ sender: currentUser, text: text, time: timeString });
-            localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
-
-            input.value = "";
-            loadGlobalMessages();
-        }
-
-        function sendAdminMessage() {
-            const input = document.getElementById("admin-chat-input");
-            const text = input.value.trim();
-            if (text === "") return;
-
-            const timeString = new Date().toLocaleTimeString([], { hour12: false });
-            const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-            
-            messages.push({ sender: currentUser || "jadminj1", text: text, time: timeString });
-            localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
-
-            input.value = "";
-            loadGlobalMessages();
-        }
-
-        function resetGlobalChat() {
-            const currentChat = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
-            
-            if (currentChat.length === 0) {
-                alert("Chat is already empty.");
-                return;
-            }
-
-            if (!confirm("Are you sure you want to reset global chat? This archives messages for Admin logs and clears the public lounge.")) {
-                return;
-            }
-
-            const archivedLogs = JSON.parse(localStorage.getItem("gamehub_archived_chat_logs")) || [];
-            const archiveEntry = {
-                archivedAt: new Date().toLocaleString(),
-                messages: currentChat
-            };
-            archivedLogs.push(archiveEntry);
-            localStorage.setItem("gamehub_archived_chat_logs", JSON.stringify(archivedLogs));
-
-            localStorage.setItem("gamehub_global_chat", JSON.stringify([]));
-
-            alert("Global chat reset and saved to archive logs!");
-            loadGlobalMessages();
-        }
-   let currentChatTarget = null;
-
-function showToast(message, durationSeconds = 4) {
-    let container = document.getElementById("toast-container");
-    
-    // Auto-create container if missing in HTML
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "toast-container";
-        document.body.appendChild(container);
-    }
-    
-    const toast = document.createElement("div");
-    toast.className = "toast";
-    toast.textContent = message;
-    
-    container.appendChild(toast);
-
-    setTimeout(() => { toast.classList.add("show"); }, 10);
-
-    setTimeout(() => {
-        toast.classList.remove("show");
-        toast.addEventListener("transitionend", () => toast.remove());
-    }, durationSeconds * 1000);
-}
-
-  // Unfriend Functionality
-  function unfriendUser(username) {
-    if (!confirm(`Are you sure you want to remove ${username} from your friends?`)) return;
-
-    // Remove from user's list
-    let myFriends = getSavedFriends(currentUser);
-    myFriends = myFriends.filter(f => f !== username);
-    localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
-
-    // Remove user from target's list
-    let targetFriends = getSavedFriends(username);
-    targetFriends = targetFriends.filter(f => f !== currentUser);
-    localStorage.setItem("gamehub_friends_" + username, JSON.stringify(targetFriends));
-
-    if (currentChatTarget && currentChatTarget.name === username) {
-        closePrivateChat();
-    }
-
-    showToast(`Unfriended ${username}.`);
-    loadFriendSubtabContent();
-}
-
-  // Private Chat Functions
-
-        function getPrivateChatKey(user1, user2) {
-    const sorted = [user1, user2].sort();
-    return `gamehub_chat_${sorted[0]}_${sorted[1]}`;
-}
-
-        // Load private messages and auto-scroll to bottom
-function loadPrivateMessages() {
-    if (!currentChatTarget) return;
-
-    const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
-    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
-    const chatContainer = document.getElementById("chat-messages");
-
-    if (!chatContainer) return;
-
-    chatContainer.innerHTML = "";
-
-    messages.forEach(msg => {
-        const msgElement = document.createElement("div");
-        const isMe = msg.sender === currentUser;
-        msgElement.className = `message ${isMe ? 'sent' : 'received'}`;
-        msgElement.textContent = msg.text;
-        chatContainer.appendChild(msgElement);
-    });
-    // Auto-scroll to the newest message at the bottom
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-        
-  // Open Chat window
-function openPrivateChat(userId, username) {
-    currentChatTarget = { id: userId, name: username };
-    
-    const targetHeader = document.getElementById("chat-target-name");
-    const chatWindow = document.getElementById("private-chat");
-
-    if (targetHeader) targetHeader.textContent = `Chatting with ${username}`;
-    if (chatWindow) chatWindow.classList.remove("hidden");
-
-    loadPrivateMessages();
-}
-
-  function closePrivateChat() {
-    currentChatTarget = null;
-    document.getElementById("private-chat").classList.add("hidden");
-  }
-
-  function handleChatInput(event) {
-    if (event.key === "Enter") {
-      sendPrivateMessage();
-    }
-  }
-
-function sendPrivateMessage() {
-    const input = document.getElementById("chat-input");
-    if (!input || !currentChatTarget) return;
-
-    const messageText = input.value.trim();
-    if (!messageText) return;
-
-    const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
-    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
-
-    const newMessage = {
-        sender: currentUser,
-        receiver: currentChatTarget.name,
-        text: messageText,
-        time: Date.now()
-    };
-
-    messages.push(newMessage);
-
-    // Save to LocalStorage (This triggers the 'storage' event in other tabs)
-    localStorage.setItem(chatKey, JSON.stringify(messages));
-
-    input.value = "";
-    loadPrivateMessages();
-}
-
-        // Listen for changes made in other tabs
-window.addEventListener("storage", (event) => {
-    // 1. Check if Global Chat was updated
-    if (event.key === "gamehub_global_chat") {
-        loadGlobalMessages();
-    }
-
-    // 2. Check if a Private Chat was updated
-    if (event.key && event.key.startsWith("gamehub_chat_")) {
-        const messages = JSON.parse(event.newValue) || [];
-        if (messages.length === 0) return;
-
-        const lastMessage = messages[messages.length - 1];
-
-        // If the message was sent to ME from someone else
-        if (lastMessage.receiver === currentUser && lastMessage.sender !== currentUser) {
-            
-            // If we are currently chatting with this sender, update the chat view live
-            if (currentChatTarget && currentChatTarget.name === lastMessage.sender) {
-                loadPrivateMessages();
-            } else {
-                // If the chat window isn't open for them, pop up a toast notification
-                showToast(`New message from ${lastMessage.sender}: "${lastMessage.text}"`);
-            }
-        }
-    }
-});
-
-        // -------------------------------------------------------------
-// USER DATA & STATS MANAGEMENT
-// -------------------------------------------------------------
-function getUserData(user) {
-    const target = user || currentUser;
-    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-    return playerStats[target] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
-}
-
-function updateUserStatsDisplay() {
-    const stats = getUserData(currentUser);
-    const moneyElem = document.getElementById("header-money");
-    const xpElem = document.getElementById("header-xp");
-
-    if (moneyElem) moneyElem.textContent = stats.money || 0;
-    if (xpElem) xpElem.textContent = stats.xp || 0;
-}
-
-// -------------------------------------------------------------
-// TAB SWITCHING UPDATES
-// -------------------------------------------------------------
-function switchTab(tabName) {
-    // Hide all main tabs
-    const views = ['games', 'friends', 'global-chat', 'shop', 'announcements', 'admin'];
-    views.forEach(view => {
-        const elem = document.getElementById(`${view}-view`);
-        if (elem) elem.style.display = (view === tabName) ? "block" : "none";
-    });
-
-    if (tabName === 'friends') {
-        loadFriendSubtabContent();
-    } else if (tabName === 'global-chat') {
-        loadGlobalMessages();
-    } else if (tabName === 'announcements') {
-        loadAnnouncements();
-    } else if (tabName === 'admin') {
-        loadAdminData();
-    }
-}
-
-function showAdminTab(tabName) {
-    document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
-    document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
-    document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
-    document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
-    document.getElementById("admin-announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
-
-    document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
-    document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
-    document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
-    document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
-    document.getElementById("admin-nav-announcements").classList.toggle("active", tabName === 'announcements');
-
-    if (tabName === 'chats') loadGlobalMessages();
-    if (tabName === 'announcements') loadAnnouncements();
-}
-
-// -------------------------------------------------------------
-// ADMIN DATA OVERRIDE (UPDATED FOR MONEY & XP)
-// -------------------------------------------------------------
-function loadAdminData() {
-    cleanExpiredBans();
-    cleanExpiredSessions();
-    const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
-    const statsTable = document.getElementById("admin-stats-list");
-    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-
-    // Clear stats table
-    if (statsTable) statsTable.innerHTML = "";
-
-    players.forEach(player => {
-        const currentStats = playerStats[player] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
-
-        // Render extended stats row
-        if (statsTable) {
-            const sRow = document.createElement("tr");
-            sRow.innerHTML = `
-                <td><strong>${player}</strong></td>
-                <td>${currentStats.played}</td>
-                <td>${currentStats.wins}</td>
-                <td>${currentStats.challenges || 0}</td>
-                <td>💰 ${currentStats.money || 0}</td>
-                <td>⭐ ${currentStats.xp || 0}</td>
-            `;
-            statsTable.appendChild(sRow);
-        }
-    });
-}
-
-function changePlayerData(targetUser) {
-    const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`);
-    if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
-        alert("Incorrect admin password! Action canceled.");
-        return;
-    }
-
-    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-    let currentStats = playerStats[targetUser] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
-
-    const newPlayed = prompt(`'Games Played' for ${targetUser}:`, currentStats.played);
-    if (newPlayed === null) return;
-
-    const newWins = prompt(`'Wins' for ${targetUser}:`, currentStats.wins);
-    if (newWins === null) return;
-
-    const newChallenges = prompt(`'Challenges' for ${targetUser}:`, currentStats.challenges || 0);
-    if (newChallenges === null) return;
-
-    const newMoney = prompt(`'Money' for ${targetUser}:`, currentStats.money || 0);
-    if (newMoney === null) return;
-
-    const newXP = prompt(`'XP' for ${targetUser}:`, currentStats.xp || 0);
-    if (newXP === null) return;
-
-    playerStats[targetUser] = {
-        played: parseInt(newPlayed, 10) || 0,
-        wins: parseInt(newWins, 10) || 0,
-        challenges: parseInt(newChallenges, 10) || 0,
-        money: parseInt(newMoney, 10) || 0,
-        xp: parseInt(newXP, 10) || 0
-    };
-
-    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-    alert(`Updated stats live for ${targetUser}!`);
-    loadAdminData();
-    updateUserStatsDisplay();
-}
-
-// -------------------------------------------------------------
-// SHOP SYSTEM
-// -------------------------------------------------------------
-function buyShopItem(itemKey, cost) {
-    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-    let currentStats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
-
-    if ((currentStats.money || 0) < cost) {
-        alert("Not enough money!");
-        return;
-    }
-
-    currentStats.money -= cost;
-    playerStats[currentUser] = currentStats;
-    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-    
-    updateUserStatsDisplay();
-    showToast(`Purchased ${itemKey}!`);
-}
-
-// -------------------------------------------------------------
-// ANNOUNCEMENTS SYSTEM & CROSS-TAB SYNC
-// -------------------------------------------------------------
-function loadAnnouncements() {
-    const publicContainer = document.getElementById("public-announcements-list");
-    const adminContainer = document.getElementById("admin-announcements-list");
-    const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
-
-    let html = "";
-    announcements.slice().reverse().forEach(ann => {
-        html += `
-            <div class="announcement-card">
-                <div class="announcement-header">
-                    <span class="announcement-author">👑 ${ann.author}</span>
-                    <span class="announcement-time">${ann.time}</span>
+            <!-- GAMES VIEW -->
+            <div id="games-view" class="tab-content">
+                <h2>Featured Games</h2>
+                <p style="margin-top: 10px; color: var(--subtext-color);">Select a game to start playing!</p>
+            </div>
+
+            <!-- FRIENDS VIEW -->
+            <div id="friends-view" class="tab-content" style="display: none;">
+                <h2>Friends List</h2>
+                <div style="margin: 15px 0; display: flex; gap: 10px;">
+                    <input type="text" id="friend-search-input" placeholder="Enter username..." style="padding: 8px; flex: 1; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: #fff;">
+                    <button class="btn-act" style="background-color: var(--accent-color); color: #000; font-weight: bold;" onclick="sendFriendRequest()">Send Request</button>
                 </div>
-                <div class="announcement-body">${ann.text}</div>
+
+                <div class="subtab-bar">
+                    <button id="friend-subtab-friends" class="active" onclick="switchFriendSubtab('friends')">Friends (<span id="friend-count">0</span>)</button>
+                    <button id="friend-subtab-requests" onclick="switchFriendSubtab('requests')">Requests (<span id="request-count">0</span>)</button>
+                    <button id="friend-subtab-sent" onclick="switchFriendSubtab('sent')">Sent (<span id="sent-count">0</span>)</button>
+                </div>
+
+                <div id="friends-list-container"></div>
+
+                <!-- Private Chat Pop-Up / Embedded Box -->
+                <div id="private-chat" class="chat-box hidden" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 id="chat-target-name">Chatting with User</h3>
+                        <button class="btn-act" style="background-color: var(--danger-color);" onclick="closePrivateChat()">Close</button>
+                    </div>
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="handleChatInput(event)">
+                        <button onclick="sendPrivateMessage()">Send</button>
+                    </div>
+                </div>
             </div>
-        `;
-    });
 
-    if (publicContainer) {
-        publicContainer.innerHTML = html || "<p style='color: var(--subtext-color);'>No announcements posted yet.</p>";
+            <!-- GLOBAL CHAT VIEW -->
+            <div id="global-chat-view" class="tab-content" style="display: none;">
+                <h2>Global Chat Room</h2>
+                <div class="chat-box">
+                    <div id="global-chat-messages-container" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="global-chat-input" placeholder="Type a public message...">
+                        <button onclick="sendGlobalMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHOP VIEW -->
+            <div id="shop-view" class="tab-content" style="display: none;">
+                <h2>Shop</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center;">
+                        <h3>2x XP Boost</h3>
+                        <p style="margin: 10px 0; color: var(--subtext-color);">Cost: 100 Money</p>
+                        <button class="btn-act" style="background-color: var(--accent-color); color: #000;" onclick="buyShopItem('XP Boost', 100)">Buy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANNOUNCEMENTS VIEW -->
+            <div id="announcements-view" class="tab-content" style="display: none;">
+                <h2>Announcements</h2>
+                <div id="public-announcements-list" class="announcements-container"></div>
+                <p style="margin-top: 10px; font-style: italic; color: var(--subtext-color); font-size: 0.85rem;">📢 Only Administrators can post announcements.</p>
+            </div>
+
+            <!-- ADMIN VIEW -->
+            <div id="admin-view" class="tab-content" style="display: none;">
+                <h2>Admin Control Panel</h2>
+                <div class="subtab-bar">
+                    <button id="admin-nav-players" class="active" onclick="showAdminTab('players')">Players</button>
+                    <button id="admin-nav-chats" onclick="showAdminTab('chats')">Chats</button>
+                    <button id="admin-nav-stats" onclick="showAdminTab('stats')">Stats</button>
+                    <button id="admin-nav-action" onclick="showAdminTab('action')">Action</button>
+                    <button id="admin-nav-announcements" onclick="showAdminTab('announcements')">Announcements</button>
+                </div>
+
+                <!-- Admin Players View -->
+                <div id="admin-players-view">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-players-list"></tbody>
+                    </table>
+                </div>
+
+                <!-- Admin Chats View -->
+                <div id="admin-chats-view" style="display: none;">
+                    <h3>Global Chat Moderation Logs</h3>
+                    <div id="admin-chat-messages-container" class="chat-messages" style="height: 300px;"></div>
+                    <div class="chat-input-row" style="margin-top: 10px;">
+                        <input type="text" id="admin-chat-input" placeholder="Type as Admin...">
+                        <button onclick="sendAdminMessage()">Send Admin Msg</button>
+                        <button class="btn-act" style="background-color: var(--danger-color);" onclick="resetGlobalChat()">Reset Chat</button>
+                    </div>
+                </div>
+
+                <!-- Admin Stats View -->
+                <div id="admin-stats-view" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Played</th>
+                                <th>Wins</th>
+                                <th>Challenges</th>
+                                <th>Money</th>
+                                <th>XP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-stats-list"></tbody>
+                    </table>
+                </div>
+
+                <!-- Admin Action View -->
+                <div id="admin-action-view" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-action-list"></tbody>
+                    </table>
+                </div>
+
+                <!-- Admin Announcements View -->
+                <div id="admin-announcements-view" style="display: none;">
+                    <h3>Post Global Announcement</h3>
+                    <div style="margin: 15px 0;">
+                        <textarea id="admin-announcement-input" placeholder="Type a global announcement..." style="width: 100%; height: 80px; padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.2);"></textarea>
+                        <button class="btn-act" style="background-color: #2ecc71; margin-top: 8px;" onclick="sendAdminAnnouncement()">Broadcast Announcement</button>
+                    </div>
+                    <h3>Live Announcements Feed</h3>
+                    <div id="admin-announcements-list" class="announcements-container"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Dynamic Toast Container -->
+    <div id="toast-container"></div>
+
+<script>
+    // System Constants
+    const ADMIN_USERNAMES = ['jadminj1', 'admin'];
+    const ADMIN_EXCLUSIVE_PASSWORD = "adminpass123";
+
+    // Application State
+    let currentUser = localStorage.getItem("gamehub_current_user") || "GuestUser";
+    let currentFriendSubtab = "friends";
+    let currentChatTarget = null;
+
+    document.getElementById("current-user-display").textContent = `User: ${currentUser}`;
+
+    // -------------------------------------------------------------
+    // TOAST NOTIFICATION SYSTEM
+    // -------------------------------------------------------------
+    function showToast(message, durationSeconds = 4) {
+        let container = document.getElementById("toast-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toast-container";
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.textContent = message;
+
+        container.appendChild(toast);
+
+        setTimeout(() => toast.classList.add("show"), 10);
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+            toast.addEventListener("transitionend", () => toast.remove());
+        }, durationSeconds * 1000);
     }
-    if (adminContainer) {
-        adminContainer.innerHTML = html || "<p style='color: var(--subtext-color);'>No announcements posted yet.</p>";
+
+    // -------------------------------------------------------------
+    // NAVIGATION & TAB SWITCHING
+    // -------------------------------------------------------------
+    function switchTab(tabName) {
+        const views = ['games', 'friends', 'global-chat', 'shop', 'announcements', 'admin'];
+        views.forEach(view => {
+            const elem = document.getElementById(`${view}-view`);
+            if (elem) elem.style.display = (view === tabName) ? "block" : "none";
+            
+            const navBtn = document.getElementById(`nav-${view}`);
+            if (navBtn) navBtn.classList.toggle("active", view === tabName);
+        });
+
+        if (tabName === 'friends') loadFriendSubtabContent();
+        else if (tabName === 'global-chat') loadGlobalMessages();
+        else if (tabName === 'announcements') loadAnnouncements();
+        else if (tabName === 'admin') loadAdminData();
     }
-}
 
-function sendAdminAnnouncement() {
-    const input = document.getElementById("admin-announcement-input");
-    const text = input.value.trim();
-    if (!text) return;
+    function showAdminTab(tabName) {
+        document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
+        document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
+        document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
+        document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
+        document.getElementById("admin-announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
 
-    const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
-    const timeString = new Date().toLocaleString();
+        document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
+        document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
+        document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
+        document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+        document.getElementById("admin-nav-announcements").classList.toggle("active", tabName === 'announcements');
 
-    announcements.push({
-        author: currentUser || "jadminj1",
-        text: text,
-        time: timeString
-    });
-
-    localStorage.setItem("gamehub_announcements", JSON.stringify(announcements));
-    input.value = "";
-    loadAnnouncements();
-    showToast("Global announcement broadcasted!");
-}
-
-// Cross-tab storage listener update
-window.addEventListener("storage", (event) => {
-    if (event.key === "gamehub_announcements") {
-        loadAnnouncements();
-        showToast("📢 New Global Announcement Posted!");
+        if (tabName === 'chats') loadGlobalMessages();
+        if (tabName === 'announcements') loadAnnouncements();
     }
-    if (event.key === "gamehub_player_stats") {
+
+    // -------------------------------------------------------------
+    // USER STATS & SHOP
+    // -------------------------------------------------------------
+    function getUserData(user) {
+        const target = user || currentUser;
+        const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+        return playerStats[target] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+    }
+
+    function updateUserStatsDisplay() {
+        const stats = getUserData(currentUser);
+        document.getElementById("header-money").textContent = stats.money || 0;
+        document.getElementById("header-xp").textContent = stats.xp || 0;
+    }
+
+    function buyShopItem(itemName, cost) {
+        let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+        let stats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+
+        if ((stats.money || 0) < cost) {
+            alert("Not enough money!");
+            return;
+        }
+
+        stats.money -= cost;
+        playerStats[currentUser] = stats;
+        localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
+
         updateUserStatsDisplay();
+        showToast(`Purchased ${itemName}!`);
     }
-});
 
-// Initial load on page ready
-document.addEventListener("DOMContentLoaded", () => {
-    updateUserStatsDisplay();
-    loadAnnouncements();
-});
-        
+    // -------------------------------------------------------------
+    // FRIENDS & PRIVATE MESSAGES SYSTEM
+    // -------------------------------------------------------------
+    function getSavedFriends(user) {
+        return JSON.parse(localStorage.getItem("gamehub_friends_" + (user || currentUser))) || [];
+    }
+
+    function getFriendRequests(user) {
+        return JSON.parse(localStorage.getItem("gamehub_friend_requests_" + (user || currentUser))) || [];
+    }
+
+    function getSentRequests(user) {
+        return JSON.parse(localStorage.getItem("gamehub_friend_sent_" + (user || currentUser))) || [];
+    }
+
+    function switchFriendSubtab(subtab) {
+        currentFriendSubtab = subtab;
+        document.getElementById("friend-subtab-friends").classList.toggle("active", subtab === 'friends');
+        document.getElementById("friend-subtab-requests").classList.toggle("active", subtab === 'requests');
+        document.getElementById("friend-subtab-sent").classList.toggle("active", subtab === 'sent');
+        loadFriendSubtabContent();
+    }
+
+    function sendFriendRequest() {
+        const searchInput = document.getElementById("friend-search-input");
+        const targetUser = searchInput.value.trim();
+
+        if (!targetUser || targetUser === currentUser) {
+            alert("Enter a valid username other than yourself!");
+            return;
+        }
+
+        let friends = getSavedFriends(currentUser);
+        if (friends.includes(targetUser)) {
+            alert(`${targetUser} is already your friend!`);
+            return;
+        }
+
+        let sent = getSentRequests(currentUser);
+        if (sent.includes(targetUser)) {
+            alert(`Friend request already sent to ${targetUser}!`);
+            return;
+        }
+
+        let requests = getFriendRequests(targetUser);
+        if (!requests.includes(currentUser)) {
+            requests.push(currentUser);
+            localStorage.setItem("gamehub_friend_requests_" + targetUser, JSON.stringify(requests));
+        }
+
+        sent.push(targetUser);
+        localStorage.setItem("gamehub_friend_sent_" + currentUser, JSON.stringify(sent));
+
+        alert(`Friend request sent to ${targetUser}!`);
+        searchInput.value = "";
+        loadFriendSubtabContent();
+    }
+
+    function acceptFriendRequest(sender) {
+        let requests = getFriendRequests(currentUser).filter(r => r !== sender);
+        localStorage.setItem("gamehub_friend_requests_" + currentUser, JSON.stringify(requests));
+
+        let sent = getSentRequests(sender).filter(s => s !== currentUser);
+        localStorage.setItem("gamehub_friend_sent_" + sender, JSON.stringify(sent));
+
+        let myFriends = getSavedFriends(currentUser);
+        if (!myFriends.includes(sender)) {
+            myFriends.push(sender);
+            localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
+        }
+
+        let senderFriends = getSavedFriends(sender);
+        if (!senderFriends.includes(currentUser)) {
+            senderFriends.push(currentUser);
+            localStorage.setItem("gamehub_friends_" + sender, JSON.stringify(senderFriends));
+        }
+
+        loadFriendSubtabContent();
+    }
+
+    function unfriendUser(username) {
+        if (!confirm(`Are you sure you want to remove ${username}?`)) return;
+
+        let myFriends = getSavedFriends(currentUser).filter(f => f !== username);
+        localStorage.setItem("gamehub_friends_" + currentUser, JSON.stringify(myFriends));
+
+        let targetFriends = getSavedFriends(username).filter(f => f !== currentUser);
+        localStorage.setItem("gamehub_friends_" + username, JSON.stringify(targetFriends));
+
+        if (currentChatTarget && currentChatTarget.name === username) {
+            closePrivateChat();
+        }
+
+        showToast(`Unfriended ${username}.`);
+        loadFriendSubtabContent();
+    }
+
+    function loadFriendSubtabContent() {
+        const container = document.getElementById("friends-list-container");
+        const friends = getSavedFriends(currentUser);
+        const requests = getFriendRequests(currentUser);
+        const sent = getSentRequests(currentUser);
+
+        document.getElementById("friend-count").innerText = friends.length;
+        document.getElementById("request-count").innerText = requests.length;
+        document.getElementById("sent-count").innerText = sent.length;
+
+        container.innerHTML = "";
+
+        if (currentFriendSubtab === "friends") {
+            if (friends.length === 0) {
+                container.innerHTML = "<p style='color: var(--subtext-color);'>No friends added yet.</p>";
+                return;
+            }
+
+            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+            friends.forEach(friend => {
+                const stats = playerStats[friend] || { played: 0, wins: 0, challenges: 0 };
+                const card = document.createElement("div");
+                card.className = "friend-card";
+                card.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-avatar">${friend.charAt(0)}</div>
+                        <div>
+                            <strong>${friend}</strong>
+                            <div class="friend-stats">${stats.played} games • ${stats.wins} wins</div>
+                        </div>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-act" style="background-color: #3498db;" onclick="openPrivateChat('${friend}', '${friend}')">Chat</button>
+                        <button class="btn-act" style="background-color: #e74c3c;" onclick="unfriendUser('${friend}')">Unfriend</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    }
+
+    // Private Chat Messaging Logic
+    function getPrivateChatKey(user1, user2) {
+        return `gamehub_chat_${[user1, user2].sort().join('_')}`;
+    }
+
+    function openPrivateChat(userId, username) {
+        currentChatTarget = { id: userId, name: username };
+        document.getElementById("chat-target-name").textContent = `Chatting with ${username}`;
+        document.getElementById("private-chat").classList.remove("hidden");
+        loadPrivateMessages();
+    }
+
+    function closePrivateChat() {
+        currentChatTarget = null;
+        document.getElementById("private-chat").classList.add("hidden");
+    }
+
+    function loadPrivateMessages() {
+        if (!currentChatTarget) return;
+        const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
+        const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+        const chatContainer = document.getElementById("chat-messages");
+
+        chatContainer.innerHTML = "";
+        messages.forEach(msg => {
+            const msgElem = document.createElement("div");
+            msgElem.className = `message ${msg.sender === currentUser ? 'sent' : 'received'}`;
+            msgElem.textContent = msg.text;
+            chatContainer.appendChild(msgElem);
+        });
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function handleChatInput(event) {
+        if (event.key === "Enter") sendPrivateMessage();
+    }
+
+    function sendPrivateMessage() {
+        const input = document.getElementById("chat-input");
+        if (!input || !currentChatTarget) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
+        const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+
+        messages.push({
+            sender: currentUser,
+            receiver: currentChatTarget.name,
+            text: text,
+            time: Date.now()
+        });
+
+        localStorage.setItem(chatKey, JSON.stringify(messages));
+        input.value = "";
+        loadPrivateMessages();
+    }
+
+    // -------------------------------------------------------------
+    // GLOBAL CHAT SYSTEM
+    // -------------------------------------------------------------
+    function loadGlobalMessages() {
+        const userContainer = document.getElementById("global-chat-messages-container");
+        const adminContainer = document.getElementById("admin-chat-messages-container");
+        const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+
+        let userHtml = "";
+        let adminHtml = "";
+
+        messages.forEach(msg => {
+            const isAdmin = ADMIN_USERNAMES.includes(msg.sender.toLowerCase());
+            const senderLabel = isAdmin 
+                ? `<span style="color: var(--danger-color); font-weight: bold;">[Admin] ${msg.sender}:</span>` 
+                : `<span style="color: var(--accent-color);">${msg.sender}:</span>`;
+
+            userHtml += `<div class="chat-msg-row">${senderLabel} ${msg.text}</div>`;
+            adminHtml += `<div class="chat-msg-row"><span style="color: var(--subtext-color);">[${msg.time}]</span> ${senderLabel} ${msg.text}</div>`;
+        });
+
+        if (userContainer) {
+            userContainer.innerHTML = userHtml;
+            userContainer.scrollTop = userContainer.scrollHeight;
+        }
+        if (adminContainer) {
+            adminContainer.innerHTML = adminHtml;
+            adminContainer.scrollTop = adminContainer.scrollHeight;
+        }
+    }
+
+    function sendGlobalMessage() {
+        const input = document.getElementById("global-chat-input");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+        messages.push({
+            sender: currentUser,
+            text: text,
+            time: new Date().toLocaleTimeString([], { hour12: false })
+        });
+
+        localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
+        input.value = "";
+        loadGlobalMessages();
+    }
+
+    function sendAdminMessage() {
+        const input = document.getElementById("admin-chat-input");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const messages = JSON.parse(localStorage.getItem("gamehub_global_chat")) || [];
+        messages.push({
+            sender: currentUser,
+            text: text,
+            time: new Date().toLocaleTimeString([], { hour12: false })
+        });
+
+        localStorage.setItem("gamehub_global_chat", JSON.stringify(messages));
+        input.value = "";
+        loadGlobalMessages();
+    }
+
+    function resetGlobalChat() {
+        if (!confirm("Reset global chat? History will be wiped.")) return;
+        localStorage.setItem("gamehub_global_chat", JSON.stringify([]));
+        loadGlobalMessages();
+    }
+
+    // -------------------------------------------------------------
+    // ANNOUNCEMENTS SYSTEM
+    // -------------------------------------------------------------
+    function loadAnnouncements() {
+        const publicContainer = document.getElementById("public-announcements-list");
+        const adminContainer = document.getElementById("admin-announcements-list");
+        const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
+
+        let html = "";
+        announcements.slice().reverse().forEach(ann => {
+            html += `
+                <div class="announcement-card">
+                    <div class="announcement-header">
+                        <span class="announcement-author">👑 ${ann.author}</span>
+                        <span>${ann.time}</span>
+                    </div>
+                    <div class="announcement-body">${ann.text}</div>
+                </div>
+            `;
+        });
+
+        const fallback = "<p style='color: var(--subtext-color);'>No announcements posted yet.</p>";
+        if (publicContainer) publicContainer.innerHTML = html || fallback;
+        if (adminContainer) adminContainer.innerHTML = html || fallback;
+    }
+
+    function sendAdminAnnouncement() {
+        const input = document.getElementById("admin-announcement-input");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
+        announcements.push({
+            author: currentUser,
+            text: text,
+            time: new Date().toLocaleString()
+        });
+
+        localStorage.setItem("gamehub_announcements", JSON.stringify(announcements));
+        input.value = "";
+        loadAnnouncements();
+        showToast("Global announcement broadcasted!");
+    }
+
+    // -------------------------------------------------------------
+    // ADMIN PANEL DATA RENDER
+    // -------------------------------------------------------------
+    function loadAdminData() {
+        const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
+        const statsTable = document.getElementById("admin-stats-list");
+        const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+        if (statsTable) {
+            statsTable.innerHTML = "";
+            players.forEach(player => {
+                const stats = playerStats[player] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><strong>${player}</strong></td>
+                    <td>${stats.played}</td>
+                    <td>${stats.wins}</td>
+                    <td>${stats.challenges || 0}</td>
+                    <td>💰 ${stats.money || 0}</td>
+                    <td>⭐ ${stats.xp || 0}</td>
+                `;
+                statsTable.appendChild(row);
+            });
+        }
+    }
+
+    // -------------------------------------------------------------
+    // REAL-TIME CROSS-TAB SYNC
+    // -------------------------------------------------------------
+    window.addEventListener("storage", (event) => {
+        if (event.key === "gamehub_global_chat") {
+            loadGlobalMessages();
+        }
+        if (event.key === "gamehub_announcements") {
+            loadAnnouncements();
+            showToast("📢 New Global Announcement Posted!");
+        }
+        if (event.key === "gamehub_player_stats") {
+            updateUserStatsDisplay();
+        }
+        if (event.key && event.key.startsWith("gamehub_chat_")) {
+            const messages = JSON.parse(event.newValue) || [];
+            if (messages.length === 0) return;
+            const lastMessage = messages[messages.length - 1];
+
+            if (lastMessage.receiver === currentUser && lastMessage.sender !== currentUser) {
+                if (currentChatTarget && currentChatTarget.name === lastMessage.sender) {
+                    loadPrivateMessages();
+                } else {
+                    showToast(`New message from ${lastMessage.sender}: "${lastMessage.text}"`);
+                }
+            }
+        }
+    });
+
+    // -------------------------------------------------------------
+    // INITIALIZATION
+    // -------------------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+        updateUserStatsDisplay();
+        loadAnnouncements();
+    });
 </script>
-
 </body>
 </html>
