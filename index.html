@@ -2468,15 +2468,17 @@ statsTable.appendChild(sRow);
 function loadAdminPrivateChats() {
     const container = document.getElementById("admin-private-chats-list");
 
-    if (!container) return;
+    if (!container) {
+        console.error("admin-private-chats-list was not found.");
+        return;
+    }
 
     container.innerHTML = "";
 
     const privateChats = [];
 
-    // Scan every LocalStorage key
+    // Find every private chat stored in LocalStorage
     for (let i = 0; i < localStorage.length; i++) {
-
         const key = localStorage.key(i);
 
         if (!key || !key.startsWith("gamehub_chat_")) {
@@ -2486,85 +2488,87 @@ function loadAdminPrivateChats() {
         try {
             const messages = JSON.parse(localStorage.getItem(key)) || [];
 
-            const chatName = key.replace("gamehub_chat_", "");
-
-            const users = chatName.split("_");
+            const chatName = key.substring("gamehub_chat_".length);
 
             privateChats.push({
                 key: key,
-                name: users.join(" + "),
+                name: chatName.replace(/_/g, " + "),
                 messages: messages
             });
 
         } catch (error) {
-            console.error("Could not read private chat:", key, error);
+            console.error("Error reading:", key, error);
         }
     }
 
-    // Sort chats alphabetically
-    privateChats.sort((a, b) =>
-        a.name.localeCompare(b.name)
-    );
+    console.log("Private chats found:", privateChats);
 
     if (privateChats.length === 0) {
         container.innerHTML = `
             <tr>
-                <td colspan="3" style="color: var(--subtext-color); text-align: center;">
-                    No private chats have been created yet.
+                <td colspan="3" style="
+                    text-align: center;
+                    color: var(--subtext-color);
+                    padding: 25px;
+                ">
+                    No private chats found.
                 </td>
             </tr>
         `;
-
         return;
     }
 
     privateChats.forEach(chat => {
-
         const row = document.createElement("tr");
 
-        row.innerHTML = `
-            <td>
-                <strong>${escapePrivateChatText(chat.name)}</strong>
-            </td>
+        const nameCell = document.createElement("td");
+        nameCell.innerHTML = `<strong>${escapePrivateChatText(chat.name)}</strong>`;
 
-            <td>
-                ${chat.messages.length}
-            </td>
+        const messagesCell = document.createElement("td");
+        messagesCell.textContent = chat.messages.length;
 
-            <td>
-                <button
-                    class="btn-act"
-                    style="background-color: #3498db;"
-                    onclick="viewAdminPrivateChat('${escapePrivateChatAttribute(chat.key)}')"
-                >
-                    👁️ View
-                </button>
-            </td>
-        `;
+        const actionCell = document.createElement("td");
+
+        const viewButton = document.createElement("button");
+        viewButton.className = "btn-act";
+        viewButton.style.backgroundColor = "#3498db";
+        viewButton.textContent = "👁️ View";
+
+        viewButton.onclick = function () {
+            viewAdminPrivateChat(chat.key);
+        };
+
+        actionCell.appendChild(viewButton);
+
+        row.appendChild(nameCell);
+        row.appendChild(messagesCell);
+        row.appendChild(actionCell);
 
         container.appendChild(row);
     });
 }
 
-
 // View a private chat as admin
 function viewAdminPrivateChat(chatKey) {
-
     const viewer = document.getElementById("admin-private-chat-viewer");
     const title = document.getElementById("admin-private-chat-title");
     const messagesContainer = document.getElementById("admin-private-chat-messages");
 
-    if (!viewer || !title || !messagesContainer) return;
+    if (!viewer || !title || !messagesContainer) {
+        console.error("Private chat viewer elements missing.");
+        return;
+    }
 
     let messages = [];
 
     try {
         messages = JSON.parse(localStorage.getItem(chatKey)) || [];
     } catch (error) {
-        messages = [];
+        console.error("Could not load private chat:", error);
+        return;
     }
 
-    const chatName = chatKey.replace("gamehub_chat_", "");
+    const chatName = chatKey.substring("gamehub_chat_".length);
     const users = chatName.split("_");
 
     title.textContent = `${users.join(" + ")} Chat`;
@@ -2572,54 +2576,41 @@ function viewAdminPrivateChat(chatKey) {
     messagesContainer.innerHTML = "";
 
     if (messages.length === 0) {
-
         messagesContainer.innerHTML = `
             <p style="color: var(--subtext-color);">
                 This chat has no messages.
             </p>
         `;
-
     } else {
-
         messages.forEach(msg => {
-
             const messageElement = document.createElement("div");
-
-            const isAdmin = ADMIN_USERNAMES.includes(
-                String(msg.sender || "").toLowerCase()
-            );
-
             messageElement.className = "chat-msg-row";
 
             const time = msg.time
                 ? new Date(msg.time).toLocaleString()
                 : "";
 
-            messageElement.innerHTML = `
-                <span class="chat-timestamp">
-                    [${escapePrivateChatText(time)}]
-                </span>
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "chat-timestamp";
+            timeSpan.textContent = `[${time}] `;
 
-                <span
-                    class="chat-msg-user"
-                    style="${isAdmin ? 'color: var(--admin-accent);' : ''}"
-                >
-                    ${escapePrivateChatText(msg.sender || "Unknown")}:
-                </span>
+            const senderSpan = document.createElement("span");
+            senderSpan.className = "chat-msg-user";
+            senderSpan.textContent = `${msg.sender || "Unknown"}:`;
 
-                ${escapePrivateChatText(msg.text || "")}
-            `;
+            messageElement.appendChild(timeSpan);
+            messageElement.appendChild(senderSpan);
+            messageElement.appendChild(
+                document.createTextNode(` ${msg.text || ""}`)
+            );
 
             messagesContainer.appendChild(messageElement);
         });
     }
 
     viewer.style.display = "block";
-
-    messagesContainer.scrollTop =
-        messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
 
 // Escape text safely
 function escapePrivateChatText(text) {
