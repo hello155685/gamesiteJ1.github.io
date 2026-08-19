@@ -897,21 +897,33 @@
                         </div>
                         <button id="switch-to-admin-btn" class="btn-identity-admin" style="display: none;" onclick="switchToAdminIdentity()">Switch To Admin Identity</button>
                     </div>
+                    
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number" id="user-stat-played">0</div>
+        <div class="stat-label">Games Played</div>
+    </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-played">0</div>
-                            <div class="stat-label">Games Played</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-wins">0</div>
-                            <div class="stat-label">Wins</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="user-stat-challenges">0</div>
-                            <div class="stat-label">Challenges</div>
-                        </div>
-                    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="user-stat-wins">0</div>
+        <div class="stat-label">Wins</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" id="user-stat-challenges">0</div>
+        <div class="stat-label">Challenges</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" id="user-stat-money">0</div>
+        <div class="stat-label">💰 Money</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" id="user-stat-xp">0</div>
+        <div class="stat-label">⭐ XP</div>
+    </div>
+</div>
 
                     <div class="filter-tags">
                         <div class="tag active">All</div>
@@ -1543,19 +1555,31 @@
             loadAdminData();
         }
 
-        function updateUserStatsDisplay() {
-            if (!currentUser) return;
-            const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            const stats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0 };
-            
-            const playedEl = document.getElementById("user-stat-played");
-            const winsEl = document.getElementById("user-stat-wins");
-            const challengesEl = document.getElementById("user-stat-challenges");
+       function updateUserStatsDisplay() {
+    if (!currentUser) return;
 
-            if (playedEl) playedEl.innerText = stats.played;
-            if (winsEl) winsEl.innerText = stats.wins;
-            if (challengesEl) challengesEl.innerText = stats.challenges || 0;
-        }
+    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+    const stats = playerStats[currentUser] || {
+        played: 0,
+        wins: 0,
+        challenges: 0,
+        xp: 0,
+        money: 0
+    };
+
+    const playedEl = document.getElementById("user-stat-played");
+    const winsEl = document.getElementById("user-stat-wins");
+    const challengesEl = document.getElementById("user-stat-challenges");
+    const xpEl = document.getElementById("user-stat-xp");
+    const moneyEl = document.getElementById("user-stat-money");
+
+    if (playedEl) playedEl.innerText = stats.played || 0;
+    if (winsEl) winsEl.innerText = stats.wins || 0;
+    if (challengesEl) challengesEl.innerText = stats.challenges || 0;
+    if (xpEl) xpEl.innerText = stats.xp || 0;
+    if (moneyEl) moneyEl.innerText = stats.money || 0;
+}
 
         function registerUserInDirectory(username) {
             let directory = JSON.parse(localStorage.getItem("gamehub_all_players")) || [];
