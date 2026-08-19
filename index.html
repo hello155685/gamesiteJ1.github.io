@@ -737,6 +737,105 @@
     border-radius: 6px;
     cursor: pointer;
   }
+
+/* ============================= */
+/* ANNOUNCEMENTS */
+/* ============================= */
+
+.announcement-admin-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.announcement-admin-card h3 {
+    margin-bottom: 15px;
+}
+
+.announcement-admin-card input,
+.announcement-admin-card textarea {
+    width: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.announcement-admin-card textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.announcement-admin-card input:focus,
+.announcement-admin-card textarea:focus {
+    border-color: var(--admin-accent);
+}
+
+.announcement-admin-card button {
+    background-color: var(--admin-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.announcement-admin-card button:hover {
+    opacity: 0.9;
+}
+
+.announcement-admin-list h3 {
+    margin-bottom: 15px;
+}
+
+/* PLAYER ANNOUNCEMENT EMBEDS */
+
+.announcement-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-color);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+.announcement-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 8px;
+}
+
+.announcement-card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.announcement-card-meta {
+    color: var(--subtext-color);
+    font-size: 0.8rem;
+}
+
+.announcement-card-message {
+    color: var(--text-color);
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.announcement-empty {
+    color: var(--subtext-color);
+    padding: 20px 0;
+}
+        
 </style>
 </head>
 <body>
@@ -773,6 +872,10 @@
                         <button id="nav-games" class="nav-item active" onclick="showTab('games')">🎮 Games</button>
                         <button id="nav-friends" class="nav-item" onclick="showTab('friends')">👥 Friends</button>
                         <button id="nav-global-chat" class="nav-item" onclick="showTab('global-chat')">💬 Global Chat</button>
+                        
+                        <button class="nav-item" id="nav-announcements" onclick="showTab('announcements')">
+    📢 Announcements
+</button>
                     </nav>
                 </div>
 
@@ -909,6 +1012,32 @@
                     </div>
                 </div>
 
+                
+
+                <!-- GLOBAL CHAT ROOM VIEW -->
+                <div id="global-chat-view" style="display: none;">
+                    <div class="header-bar">
+                        <div class="header">
+                            <h1>Global Chat Room</h1>
+                            <p>Public live feed — Chat with everyone online!</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3>🌐 #public-lounge</h3>
+                        </div>
+                        <div class="chat-messages" id="global-chat-messages-container">
+                            <!-- Live messages stream here -->
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="global-chat-input" placeholder="Say something in global chat...">
+                            <button onclick="sendGlobalMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                
                 <!-- GLOBAL CHAT ROOM VIEW -->
                 <div id="global-chat-view" style="display: none;">
                     <div class="header-bar">
@@ -937,6 +1066,26 @@
         </div>
     </div>
 
+    <div id="announcements-view" style="display: none;">
+    <div class="header">
+        <h1>Announcements</h1>
+        <p>Latest announcements from the administration.</p>
+    </div>
+
+    <div id="announcements-list">
+        <p style="color: var(--subtext-color);">
+            No announcements yet.
+        </p>
+    </div>
+</div>
+
+            </main>
+
+        </div>
+    </div>
+
+    
+
     <!-- ADMIN PANEL DASHBOARD -->
     <div id="admin-content">
         <div class="app-container">
@@ -959,6 +1108,9 @@
                         <button id="admin-nav-chats" class="nav-item" onclick="showAdminTab('chats')">💬 Chats</button>
                         <button id="admin-nav-stats" class="nav-item" onclick="showAdminTab('stats')">📊 Stats</button>
                         <button id="admin-nav-action" class="nav-item" onclick="showAdminTab('action')">⚡ Action</button>
+                        <button class="nav-item" id="admin-nav-announcements" onclick="showAdminTab('announcements')">
+    📢 Announcements
+</button>
                     </nav>
                 </div>
 
@@ -1052,7 +1204,7 @@
                     </div>
                 </div>
 
-                <!-- ADMIN ACTION VIEW -->
+                            <!-- ADMIN ACTION VIEW -->
                 <div id="admin-action-view" style="display: none;">
                     <div class="header-bar">
                         <div class="header">
@@ -1075,6 +1227,45 @@
                                 <!-- Action player rows dynamically loaded -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN ANNOUNCEMENTS VIEW -->
+                <div id="admin-announcements-view" style="display: none;">
+                    <div class="header-bar">
+                        <div class="header">
+                            <h1>Announcements</h1>
+                            <p>Create and manage announcements for all players.</p>
+                        </div>
+                    </div>
+
+                    <div class="announcement-admin-card">
+                        <h3>📢 Create Announcement</h3>
+
+                        <input
+                            type="text"
+                            id="announcement-title-input"
+                            placeholder="Announcement title..."
+                        >
+
+                        <textarea
+                            id="announcement-message-input"
+                            placeholder="Write your announcement..."
+                            rows="6"
+                        ></textarea>
+
+                        <button onclick="sendAnnouncement()">
+                            Send Announcement
+                        </button>
+                    </div>
+
+                    <div class="announcement-admin-list">
+                        <h3>Previous Announcements</h3>
+                        <div id="admin-announcements-list">
+                            <p style="color: var(--subtext-color);">
+                                No announcements yet.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -1398,38 +1589,202 @@
 
         // USER TAB SWITCHING
         function showTab(tabName) {
-            document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
-            document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
-            document.getElementById("global-chat-view").style.display = tabName === 'global-chat' ? "block" : "none";
+    document.getElementById("games-view").style.display = tabName === 'games' ? "block" : "none";
+    document.getElementById("friends-view").style.display = tabName === 'friends' ? "block" : "none";
+    document.getElementById("global-chat-view").style.display = tabName === 'global-chat' ? "block" : "none";
+    document.getElementById("announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
 
-            document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
-            document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
-            document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
+    document.getElementById("nav-games").classList.toggle("active", tabName === 'games');
+    document.getElementById("nav-friends").classList.toggle("active", tabName === 'friends');
+    document.getElementById("nav-global-chat").classList.toggle("active", tabName === 'global-chat');
+    document.getElementById("nav-announcements").classList.toggle("active", tabName === 'announcements');
 
-            if (tabName === 'friends') {
-                loadFriendSubtabContent();
-            } else if (tabName === 'global-chat') {
-                loadGlobalMessages();
-            }
-        }
+    if (tabName === 'friends') {
+        loadFriendSubtabContent();
+    } else if (tabName === 'global-chat') {
+        loadGlobalMessages();
+    } else if (tabName === 'announcements') {
+        loadAnnouncements();
+    }
+}
 
         // ADMIN TAB SWITCHING
-        function showAdminTab(tabName) {
-            document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
-            document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
-            document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
-            document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
+      function showAdminTab(tabName) {
+    document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
+    document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
+    document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
+    document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
+    document.getElementById("admin-announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
 
-            document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
-            document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
-            document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
-            document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+    document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
+    document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
+    document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
+    document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+    document.getElementById("admin-nav-announcements").classList.toggle("active", tabName === 'announcements');
 
-            if (tabName === 'chats') {
-                loadGlobalMessages();
-            }
-        }
+    if (tabName === 'chats') {
+        loadGlobalMessages();
+    } else if (tabName === 'announcements') {
+        loadAdminAnnouncements();
+    }
+}
 
+        // =============================
+// ANNOUNCEMENT SYSTEM
+// =============================
+
+function getAnnouncements() {
+    return JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
+}
+
+function saveAnnouncements(announcements) {
+    localStorage.setItem(
+        "gamehub_announcements",
+        JSON.stringify(announcements)
+    );
+}
+
+function sendAnnouncement() {
+    if (!currentUser || !ADMIN_USERNAMES.includes(currentUser.toLowerCase())) {
+        alert("Only administrators can send announcements.");
+        return;
+    }
+
+    const titleInput = document.getElementById("announcement-title-input");
+    const messageInput = document.getElementById("announcement-message-input");
+
+    const title = titleInput.value.trim();
+    const message = messageInput.value.trim();
+
+    if (!title) {
+        alert("Please enter an announcement title.");
+        return;
+    }
+
+    if (!message) {
+        alert("Please enter an announcement message.");
+        return;
+    }
+
+    const announcements = getAnnouncements();
+
+    announcements.unshift({
+        id: Date.now(),
+        title: title,
+        message: message,
+        author: currentUser,
+        timestamp: new Date().toLocaleString()
+    });
+
+    saveAnnouncements(announcements);
+
+    titleInput.value = "";
+    messageInput.value = "";
+
+    loadAdminAnnouncements();
+    loadAnnouncements();
+
+    alert("Announcement sent!");
+}
+
+function loadAnnouncements() {
+    const container = document.getElementById("announcements-list");
+
+    if (!container) return;
+
+    const announcements = getAnnouncements();
+
+    container.innerHTML = "";
+
+    if (announcements.length === 0) {
+        container.innerHTML = `
+            <p class="announcement-empty">
+                No announcements yet.
+            </p>
+        `;
+        return;
+    }
+
+    announcements.forEach(announcement => {
+        const card = document.createElement("div");
+        card.className = "announcement-card";
+
+        card.innerHTML = `
+            <div class="announcement-card-header">
+                <div class="announcement-card-title">
+                    📢 ${escapeAnnouncementText(announcement.title)}
+                </div>
+
+                <div class="announcement-card-meta">
+                    ${escapeAnnouncementText(announcement.timestamp)}
+                </div>
+            </div>
+
+            <div class="announcement-card-meta" style="margin-bottom: 10px;">
+                Posted by ${escapeAnnouncementText(announcement.author)}
+            </div>
+
+            <div class="announcement-card-message">
+                ${escapeAnnouncementText(announcement.message)}
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function loadAdminAnnouncements() {
+    const container = document.getElementById("admin-announcements-list");
+
+    if (!container) return;
+
+    const announcements = getAnnouncements();
+
+    container.innerHTML = "";
+
+    if (announcements.length === 0) {
+        container.innerHTML = `
+            <p class="announcement-empty">
+                No announcements yet.
+            </p>
+        `;
+        return;
+    }
+
+    announcements.forEach(announcement => {
+        const card = document.createElement("div");
+        card.className = "announcement-card";
+
+        card.innerHTML = `
+            <div class="announcement-card-header">
+                <div class="announcement-card-title">
+                    📢 ${escapeAnnouncementText(announcement.title)}
+                </div>
+
+                <div class="announcement-card-meta">
+                    ${escapeAnnouncementText(announcement.timestamp)}
+                </div>
+            </div>
+
+            <div class="announcement-card-meta" style="margin-bottom: 10px;">
+                Posted by ${escapeAnnouncementText(announcement.author)}
+            </div>
+
+            <div class="announcement-card-message">
+                ${escapeAnnouncementText(announcement.message)}
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function escapeAnnouncementText(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+        
         function loadAdminData() {
             cleanExpiredBans();
             cleanExpiredSessions();
@@ -2018,14 +2373,21 @@ function sendPrivateMessage() {
     loadPrivateMessages();
 }
 
-        // Listen for changes made in other tabs
+// Listen for changes made in other tabs
 window.addEventListener("storage", (event) => {
+
     // 1. Check if Global Chat was updated
     if (event.key === "gamehub_global_chat") {
         loadGlobalMessages();
     }
 
-    // 2. Check if a Private Chat was updated
+    // 2. Check if Announcements were updated
+    if (event.key === "gamehub_announcements") {
+        loadAnnouncements();
+        loadAdminAnnouncements();
+    }
+
+    // 3. Check if a Private Chat was updated
     if (event.key && event.key.startsWith("gamehub_chat_")) {
         const messages = JSON.parse(event.newValue) || [];
         if (messages.length === 0) return;
@@ -2034,7 +2396,7 @@ window.addEventListener("storage", (event) => {
 
         // If the message was sent to ME from someone else
         if (lastMessage.receiver === currentUser && lastMessage.sender !== currentUser) {
-            
+
             // If we are currently chatting with this sender, update the chat view live
             if (currentChatTarget && currentChatTarget.name === lastMessage.sender) {
                 loadPrivateMessages();
