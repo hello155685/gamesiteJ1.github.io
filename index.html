@@ -227,6 +227,75 @@
             background-color: var(--tag-bg);
         }
 
+        .user-stats-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.stat-badge {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Full-width Announcements layout */
+.announcements-container {
+    width: 100%;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.announcement-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #f1c40f;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--subtext-color);
+}
+
+.announcement-author {
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+.announcement-body {
+    font-size: 1rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+.read-only-notice {
+    margin-top: 10px;
+    font-style: italic;
+    color: var(--subtext-color);
+    font-size: 0.85rem;
+}
+
+.admin-announcement-box textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
         /* MAIN CONTENT AREA */
         .dashboard-content {
             flex: 1;
@@ -760,7 +829,7 @@
             <!-- USER SIDEBAR -->
             <aside class="sidebar">
                 <div>
-                    <div class="sidebar-brand">🎮 Game Hub</div>
+                    -brand">🎮 Game Hub</div>
                     
                     <div class="user-card">
                         <div class="user-avatar" id="display-avatar">P</div>
@@ -774,6 +843,12 @@
                         <button id="nav-games" class="nav-item active" onclick="showTab('games')">🎮 Games</button>
                         <button id="nav-friends" class="nav-item" onclick="showTab('friends')">👥 Friends</button>
                         <button id="nav-global-chat" class="nav-item" onclick="showTab('global-chat')">💬 Global Chat</button>
+
+                        <!-- NEW SHOP BUTTON -->
+                        <button id="nav-shop" class="nav-item" onclick="showTab('shop')">Shop</button>
+
+                        <!-- NEW ANNOUNCEMENTS BUTTON (Below Shop) -->
+    <button id="nav-announcements" class="nav-item" onclick="showTab('announcements')">Announcements</button>
                     </nav>
                 </div>
 
@@ -960,6 +1035,7 @@
                         <button id="admin-nav-chats" class="nav-item" onclick="showAdminTab('chats')">💬 Chats</button>
                         <button id="admin-nav-stats" class="nav-item" onclick="showAdminTab('stats')">📊 Stats</button>
                         <button id="admin-nav-action" class="nav-item" onclick="showAdminTab('action')">⚡ Action</button>
+                        <button id="admin-tab-btn" class="nav-item" onclick="showAdminTab('admin')">Admin Panel</button>
                     </nav>
                 </div>
 
@@ -1075,6 +1151,18 @@
                             <tbody id="admin-action-list">
                                 <!-- Action player rows dynamically loaded -->
                             </tbody>
+                            <!-- Update Admin Stats Table Header -->
+<thead>
+    <tr>
+        <th>Player</th>
+        <th>Played</th>
+        <th>Wins</th>
+        <th>Challenges</th>
+        <th>Money</th>
+        <th>XP</th>
+    </tr>
+</thead>
+<tbody id="admin-stats-list"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1083,6 +1171,26 @@
 
         </div>
     </div>
+
+    <!-- SHOP VIEW -->
+<div id="shop-view" class="tab-content" style="display: none;">
+    <h2>Shop</h2>
+    <div class="shop-grid">
+        <div class="shop-item">
+            <h3>2x XP Boost</h3>
+            <p>Cost: 100 Money</p>
+            <button onclick="buyShopItem('xpBoost', 100)">Buy</button>
+        </div>
+        <!-- Add more shop items here -->
+    </div>
+</div>
+
+<!-- PUBLIC ANNOUNCEMENTS VIEW -->
+<div id="announcements-view" class="tab-content" style="display: none; height: 100%;">
+    <h2>Announcements</h2>
+    <div id="public-announcements-list" class="announcements-container"></div>
+    <p class="read-only-notice">📢 Only Administrators can post announcements.</p>
+</div>
 
         <!-- Toast Container for Notifications -->
 <div id="toast-container" class="toast-container"></div>
@@ -2045,6 +2153,220 @@ window.addEventListener("storage", (event) => {
             }
         }
     }
+});
+
+        // -------------------------------------------------------------
+// USER DATA & STATS MANAGEMENT
+// -------------------------------------------------------------
+function getUserData(user) {
+    const target = user || currentUser;
+    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+    return playerStats[target] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+}
+
+function updateUserStatsDisplay() {
+    const stats = getUserData(currentUser);
+    const moneyElem = document.getElementById("header-money");
+    const xpElem = document.getElementById("header-xp");
+
+    if (moneyElem) moneyElem.textContent = stats.money || 0;
+    if (xpElem) xpElem.textContent = stats.xp || 0;
+}
+
+// -------------------------------------------------------------
+// TAB SWITCHING UPDATES
+// -------------------------------------------------------------
+function switchTab(tabName) {
+    // Hide all main tabs
+    const views = ['games', 'friends', 'global-chat', 'shop', 'announcements', 'admin'];
+    views.forEach(view => {
+        const elem = document.getElementById(`${view}-view`);
+        if (elem) elem.style.display = (view === tabName) ? "block" : "none";
+    });
+
+    if (tabName === 'friends') {
+        loadFriendSubtabContent();
+    } else if (tabName === 'global-chat') {
+        loadGlobalMessages();
+    } else if (tabName === 'announcements') {
+        loadAnnouncements();
+    } else if (tabName === 'admin') {
+        loadAdminData();
+    }
+}
+
+function showAdminTab(tabName) {
+    document.getElementById("admin-players-view").style.display = tabName === 'players' ? "block" : "none";
+    document.getElementById("admin-chats-view").style.display = tabName === 'chats' ? "block" : "none";
+    document.getElementById("admin-stats-view").style.display = tabName === 'stats' ? "block" : "none";
+    document.getElementById("admin-action-view").style.display = tabName === 'action' ? "block" : "none";
+    document.getElementById("admin-announcements-view").style.display = tabName === 'announcements' ? "block" : "none";
+
+    document.getElementById("admin-nav-players").classList.toggle("active", tabName === 'players');
+    document.getElementById("admin-nav-chats").classList.toggle("active", tabName === 'chats');
+    document.getElementById("admin-nav-stats").classList.toggle("active", tabName === 'stats');
+    document.getElementById("admin-nav-action").classList.toggle("active", tabName === 'action');
+    document.getElementById("admin-nav-announcements").classList.toggle("active", tabName === 'announcements');
+
+    if (tabName === 'chats') loadGlobalMessages();
+    if (tabName === 'announcements') loadAnnouncements();
+}
+
+// -------------------------------------------------------------
+// ADMIN DATA OVERRIDE (UPDATED FOR MONEY & XP)
+// -------------------------------------------------------------
+function loadAdminData() {
+    cleanExpiredBans();
+    cleanExpiredSessions();
+    const players = JSON.parse(localStorage.getItem("gamehub_all_players")) || [currentUser];
+    const statsTable = document.getElementById("admin-stats-list");
+    const playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+
+    // Clear stats table
+    if (statsTable) statsTable.innerHTML = "";
+
+    players.forEach(player => {
+        const currentStats = playerStats[player] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+
+        // Render extended stats row
+        if (statsTable) {
+            const sRow = document.createElement("tr");
+            sRow.innerHTML = `
+                <td><strong>${player}</strong></td>
+                <td>${currentStats.played}</td>
+                <td>${currentStats.wins}</td>
+                <td>${currentStats.challenges || 0}</td>
+                <td>💰 ${currentStats.money || 0}</td>
+                <td>⭐ ${currentStats.xp || 0}</td>
+            `;
+            statsTable.appendChild(sRow);
+        }
+    });
+}
+
+function changePlayerData(targetUser) {
+    const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`);
+    if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
+        alert("Incorrect admin password! Action canceled.");
+        return;
+    }
+
+    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+    let currentStats = playerStats[targetUser] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+
+    const newPlayed = prompt(`'Games Played' for ${targetUser}:`, currentStats.played);
+    if (newPlayed === null) return;
+
+    const newWins = prompt(`'Wins' for ${targetUser}:`, currentStats.wins);
+    if (newWins === null) return;
+
+    const newChallenges = prompt(`'Challenges' for ${targetUser}:`, currentStats.challenges || 0);
+    if (newChallenges === null) return;
+
+    const newMoney = prompt(`'Money' for ${targetUser}:`, currentStats.money || 0);
+    if (newMoney === null) return;
+
+    const newXP = prompt(`'XP' for ${targetUser}:`, currentStats.xp || 0);
+    if (newXP === null) return;
+
+    playerStats[targetUser] = {
+        played: parseInt(newPlayed, 10) || 0,
+        wins: parseInt(newWins, 10) || 0,
+        challenges: parseInt(newChallenges, 10) || 0,
+        money: parseInt(newMoney, 10) || 0,
+        xp: parseInt(newXP, 10) || 0
+    };
+
+    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
+    alert(`Updated stats live for ${targetUser}!`);
+    loadAdminData();
+    updateUserStatsDisplay();
+}
+
+// -------------------------------------------------------------
+// SHOP SYSTEM
+// -------------------------------------------------------------
+function buyShopItem(itemKey, cost) {
+    let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
+    let currentStats = playerStats[currentUser] || { played: 0, wins: 0, challenges: 0, money: 0, xp: 0 };
+
+    if ((currentStats.money || 0) < cost) {
+        alert("Not enough money!");
+        return;
+    }
+
+    currentStats.money -= cost;
+    playerStats[currentUser] = currentStats;
+    localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
+    
+    updateUserStatsDisplay();
+    showToast(`Purchased ${itemKey}!`);
+}
+
+// -------------------------------------------------------------
+// ANNOUNCEMENTS SYSTEM & CROSS-TAB SYNC
+// -------------------------------------------------------------
+function loadAnnouncements() {
+    const publicContainer = document.getElementById("public-announcements-list");
+    const adminContainer = document.getElementById("admin-announcements-list");
+    const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
+
+    let html = "";
+    announcements.slice().reverse().forEach(ann => {
+        html += `
+            <div class="announcement-card">
+                <div class="announcement-header">
+                    <span class="announcement-author">👑 ${ann.author}</span>
+                    <span class="announcement-time">${ann.time}</span>
+                </div>
+                <div class="announcement-body">${ann.text}</div>
+            </div>
+        `;
+    });
+
+    if (publicContainer) {
+        publicContainer.innerHTML = html || "<p style='color: var(--subtext-color);'>No announcements posted yet.</p>";
+    }
+    if (adminContainer) {
+        adminContainer.innerHTML = html || "<p style='color: var(--subtext-color);'>No announcements posted yet.</p>";
+    }
+}
+
+function sendAdminAnnouncement() {
+    const input = document.getElementById("admin-announcement-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const announcements = JSON.parse(localStorage.getItem("gamehub_announcements")) || [];
+    const timeString = new Date().toLocaleString();
+
+    announcements.push({
+        author: currentUser || "jadminj1",
+        text: text,
+        time: timeString
+    });
+
+    localStorage.setItem("gamehub_announcements", JSON.stringify(announcements));
+    input.value = "";
+    loadAnnouncements();
+    showToast("Global announcement broadcasted!");
+}
+
+// Cross-tab storage listener update
+window.addEventListener("storage", (event) => {
+    if (event.key === "gamehub_announcements") {
+        loadAnnouncements();
+        showToast("📢 New Global Announcement Posted!");
+    }
+    if (event.key === "gamehub_player_stats") {
+        updateUserStatsDisplay();
+    }
+});
+
+// Initial load on page ready
+document.addEventListener("DOMContentLoaded", () => {
+    updateUserStatsDisplay();
+    loadAnnouncements();
 });
         
 </script>
