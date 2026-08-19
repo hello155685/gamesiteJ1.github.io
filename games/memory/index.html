@@ -17,9 +17,10 @@
 
   <div id="game"></div>
 
-  <script src="js/script.babel.js">
+  <script src="js/script.babel.js"></script>
 
-    (function () {
+  <script>
+(function () {
     const username = localStorage.getItem("gamehub_username");
 
     if (!username) {
@@ -72,8 +73,7 @@
         `GameHub: +${xpReward} XP, +${moneyReward} Money, +1 Game Played`
     );
 })();
-    
-  </script>
+</script>
 </body>
 
 </html>
