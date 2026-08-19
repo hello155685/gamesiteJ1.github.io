@@ -1187,7 +1187,7 @@
                     </div>
                 </div>
 
-         <!-- ADMIN CHATS VIEW -->
+<!-- ADMIN CHATS VIEW -->
 <div id="admin-chats-view" style="display: none;">
 
     <div class="header-bar">
@@ -1242,7 +1242,7 @@
     <div class="header-bar">
         <div class="header">
             <h1>Private Chats</h1>
-            <p>View all private conversations between players. Admins can read but cannot send messages.</p>
+            <p>View all private conversations between players. Admins can only read these chats.</p>
         </div>
 
         <button class="btn-identity-player" onclick="switchToPlayerIdentity()">
@@ -1251,7 +1251,7 @@
     </div>
 
     <div id="admin-private-chat-list-container">
-        <!-- Private chat cards appear here -->
+        <!-- Private chats appear here -->
     </div>
 
     <div id="admin-private-chat-viewer" style="display: none; margin-top: 25px;">
@@ -1274,44 +1274,6 @@
     </div>
 
 </div>
-    <!-- READ-ONLY PRIVATE CHAT VIEWER -->
-    <div id="admin-private-chat-viewer" style="display: none; margin-top: 20px;">
-
-        <div class="chat-container">
-
-            <div class="chat-header">
-                <h3 id="admin-private-chat-title">
-                    Private Chat
-                </h3>
-            </div>
-
-            <div
-                class="chat-messages"
-                id="admin-private-chat-messages"
-            ></div>
-
-        </div>
-
-    </div>
-
-</div>
-                    <div class="header-bar">
-                        <div class="header">
-                            <h1>Global Chat Monitor</h1>
-                            <p>Live stream of global public chat messages with timestamps</p>
-                        </div>
-                        <button class="btn-identity-player" onclick="switchToPlayerIdentity()">Switch To Player Identity</button>
-                    </div>
-
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <h3>👁️ Live Global Chat Logs</h3>
-                        </div>
-                        <div class="chat-messages" id="admin-chat-messages-container">
-                            <!-- Admin stream of chat messages -->
-                        </div>
-                    </div>
-
                     <!-- ADMIN CHAT CONTROLS -->
                     <div class="chat-input-area" style="margin-top: 15px; max-width: 700px; display: flex; gap: 10px;">
                         <input type="text" id="admin-chat-input" placeholder="Broadcast message as Admin..." style="flex: 1;">
@@ -2521,10 +2483,10 @@ statsTable.appendChild(sRow);
 // =====================================
 
 function loadAdminPrivateChats() {
-    const container = document.getElementById("admin-private-chats-list");
+    const container = document.getElementById("admin-private-chat-list-container");
 
     if (!container) {
-        console.error("admin-private-chats-list was not found.");
+        console.error("admin-private-chat-list-container was not found.");
         return;
     }
 
@@ -2532,7 +2494,6 @@ function loadAdminPrivateChats() {
 
     const privateChats = [];
 
-    // Find every private chat stored in LocalStorage
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
 
@@ -2552,7 +2513,7 @@ function loadAdminPrivateChats() {
             });
 
         } catch (error) {
-            console.error("Error reading:", key, error);
+            console.error("Error reading private chat:", key, error);
         }
     }
 
@@ -2560,46 +2521,55 @@ function loadAdminPrivateChats() {
 
     if (privateChats.length === 0) {
         container.innerHTML = `
-            <tr>
-                <td colspan="3" style="
-                    text-align: center;
-                    color: var(--subtext-color);
-                    padding: 25px;
-                ">
+            <div class="announcement-admin-card">
+                <p class="announcement-empty">
                     No private chats found.
-                </td>
-            </tr>
+                </p>
+            </div>
         `;
         return;
     }
 
     privateChats.forEach(chat => {
-        const row = document.createElement("tr");
 
-        const nameCell = document.createElement("td");
-        nameCell.innerHTML = `<strong>${escapePrivateChatText(chat.name)}</strong>`;
+        const card = document.createElement("div");
+        card.className = "announcement-admin-card";
 
-        const messagesCell = document.createElement("td");
-        messagesCell.textContent = chat.messages.length;
+        const topRow = document.createElement("div");
+        topRow.style.display = "flex";
+        topRow.style.justifyContent = "space-between";
+        topRow.style.alignItems = "center";
+        topRow.style.gap = "15px";
 
-        const actionCell = document.createElement("td");
+        const info = document.createElement("div");
+
+        const title = document.createElement("h3");
+        title.style.marginBottom = "6px";
+        title.textContent = `🔒 ${chat.name} Chat`;
+
+        const count = document.createElement("p");
+        count.style.color = "var(--subtext-color)";
+        count.style.fontSize = "0.85rem";
+        count.textContent =
+            `${chat.messages.length} message${chat.messages.length === 1 ? "" : "s"}`;
+
+        info.appendChild(title);
+        info.appendChild(count);
 
         const viewButton = document.createElement("button");
         viewButton.className = "btn-act";
         viewButton.style.backgroundColor = "#3498db";
-        viewButton.textContent = "👁️ View";
+        viewButton.textContent = "👁️ View Chat";
 
         viewButton.onclick = function () {
             viewAdminPrivateChat(chat.key);
         };
 
-        actionCell.appendChild(viewButton);
+        topRow.appendChild(info);
+        topRow.appendChild(viewButton);
 
-        row.appendChild(nameCell);
-        row.appendChild(messagesCell);
-        row.appendChild(actionCell);
-
-        container.appendChild(row);
+        card.appendChild(topRow);
+        container.appendChild(card);
     });
 }
 
