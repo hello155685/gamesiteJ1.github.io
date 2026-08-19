@@ -2167,39 +2167,80 @@ statsTable.appendChild(sRow);
             });
         }
 
-        function changePlayerData(targetUser) {
-            const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`);
-            
-            if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
-                alert("Incorrect admin password! Action canceled.");
-                return;
-            }
+       function changePlayerData(targetUser) {
+    const adminPass = prompt(
+        `Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to edit stats for ${targetUser}:`
+    );
 
-            let playerStats = JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
-            let currentStats = playerStats[targetUser] || { played: 0, wins: 0, challenges: 0 };
+    if (adminPass !== ADMIN_EXCLUSIVE_PASSWORD) {
+        alert("Incorrect admin password! Action canceled.");
+        return;
+    }
 
-            const newPlayed = prompt(`Enter new 'Games Played' count for ${targetUser}:`, currentStats.played);
-            if (newPlayed === null) return;
+    let playerStats =
+        JSON.parse(localStorage.getItem("gamehub_player_stats")) || {};
 
-            const newWins = prompt(`Enter new 'Wins' count for ${targetUser}:`, currentStats.wins);
-            if (newWins === null) return;
+    let currentStats = playerStats[targetUser] || {
+        played: 0,
+        wins: 0,
+        challenges: 0,
+        xp: 0,
+        money: 0
+    };
 
-            const newChallenges = prompt(`Enter new 'Challenges' count for ${targetUser}:`, currentStats.challenges || 0);
-            if (newChallenges === null) return;
+    // Make sure older players have XP and Money
+    currentStats.xp = currentStats.xp || 0;
+    currentStats.money = currentStats.money || 0;
 
-           playerStats[targetUser] = {
-    played: parseInt(newPlayed, 10) || 0,
-    wins: parseInt(newWins, 10) || 0,
-    challenges: parseInt(newChallenges, 10) || 0,
-    xp: currentStats.xp || 0,
-    money: currentStats.money || 0
-};
+    const newPlayed = prompt(
+        `Enter new 'Games Played' count for ${targetUser}:`,
+        currentStats.played
+    );
+    if (newPlayed === null) return;
 
-            localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
-            alert(`Updated stats live for ${targetUser}!`);
-            loadAdminData();
-            updateUserStatsDisplay();
-        }
+    const newWins = prompt(
+        `Enter new 'Wins' count for ${targetUser}:`,
+        currentStats.wins
+    );
+    if (newWins === null) return;
+
+    const newChallenges = prompt(
+        `Enter new 'Challenges' count for ${targetUser}:`,
+        currentStats.challenges || 0
+    );
+    if (newChallenges === null) return;
+
+    const newXP = prompt(
+        `Enter new 'XP' amount for ${targetUser}:`,
+        currentStats.xp
+    );
+    if (newXP === null) return;
+
+    const newMoney = prompt(
+        `Enter new 'Money' amount for ${targetUser}:`,
+        currentStats.money
+    );
+    if (newMoney === null) return;
+
+    // Save all updated stats
+    playerStats[targetUser] = {
+        played: parseInt(newPlayed, 10) || 0,
+        wins: parseInt(newWins, 10) || 0,
+        challenges: parseInt(newChallenges, 10) || 0,
+        xp: parseInt(newXP, 10) || 0,
+        money: parseInt(newMoney, 10) || 0
+    };
+
+    localStorage.setItem(
+        "gamehub_player_stats",
+        JSON.stringify(playerStats)
+    );
+
+    alert(`Updated stats live for ${targetUser}!`);
+
+    loadAdminData();
+    updateUserStatsDisplay();
+}
 
         function removePlayerData(targetUser) {
             const adminPass = prompt(`Enter admin password (${ADMIN_EXCLUSIVE_PASSWORD}) to REMOVE ALL DATA for ${targetUser}:`);
