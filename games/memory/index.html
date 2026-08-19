@@ -17,7 +17,63 @@
 
   <div id="game"></div>
 
-  <script src="js/script.babel.js"></script>
+  <script src="js/script.babel.js">
+
+    (function () {
+    const username = localStorage.getItem("gamehub_username");
+
+    if (!username) {
+        console.log("GameHub: No logged-in user found. No reward given.");
+        return;
+    }
+
+    const playerStats = JSON.parse(
+        localStorage.getItem("gamehub_player_stats")
+    ) || {};
+
+    if (!playerStats[username]) {
+        playerStats[username] = {
+            played: 0,
+            wins: 0,
+            challenges: 0,
+            xp: 0,
+            money: 0
+        };
+    }
+
+    const stats = playerStats[username];
+
+    stats.played = stats.played || 0;
+    stats.wins = stats.wins || 0;
+    stats.challenges = stats.challenges || 0;
+    stats.xp = stats.xp || 0;
+    stats.money = stats.money || 0;
+
+    const xpReward = Math.floor(Math.random() * 6) + 5;
+    const moneyReward = Math.floor(Math.random() * 6) + 5;
+
+    stats.played += 1;
+    stats.xp += xpReward;
+    stats.money += moneyReward;
+
+    playerStats[username] = stats;
+
+    localStorage.setItem(
+        "gamehub_player_stats",
+        JSON.stringify(playerStats)
+    );
+
+    window.dispatchEvent(new StorageEvent("storage", {
+        key: "gamehub_player_stats",
+        newValue: JSON.stringify(playerStats)
+    }));
+
+    console.log(
+        `GameHub: +${xpReward} XP, +${moneyReward} Money, +1 Game Played`
+    );
+})();
+    
+  </script>
 </body>
 
 </html>
