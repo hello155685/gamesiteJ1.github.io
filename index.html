@@ -1910,11 +1910,13 @@ statsTable.appendChild(sRow);
             const newChallenges = prompt(`Enter new 'Challenges' count for ${targetUser}:`, currentStats.challenges || 0);
             if (newChallenges === null) return;
 
-            playerStats[targetUser] = {
-                played: parseInt(newPlayed, 10) || 0,
-                wins: parseInt(newWins, 10) || 0,
-                challenges: parseInt(newChallenges, 10) || 0
-            };
+           playerStats[targetUser] = {
+    played: parseInt(newPlayed, 10) || 0,
+    wins: parseInt(newWins, 10) || 0,
+    challenges: parseInt(newChallenges, 10) || 0,
+    xp: currentStats.xp || 0,
+    money: currentStats.money || 0
+};
 
             localStorage.setItem("gamehub_player_stats", JSON.stringify(playerStats));
             alert(`Updated stats live for ${targetUser}!`);
