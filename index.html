@@ -1709,6 +1709,8 @@
             loadFriendSubtabContent();
         }
 
+        
+
         function loadFriendSubtabContent() {
             const container = document.getElementById("friends-list-container");
             const friends = getSavedFriends(currentUser);
@@ -1938,13 +1940,47 @@ function showToast(message, durationSeconds = 4) {
 }
 
   // Private Chat Functions
-  function openPrivateChat(userId, username) {
+
+        function getPrivateChatKey(user1, user2) {
+    const sorted = [user1, user2].sort();
+    return `gamehub_chat_${sorted[0]}_${sorted[1]}`;
+}
+
+        // Load private messages and auto-scroll to bottom
+function loadPrivateMessages() {
+    if (!currentChatTarget) return;
+
+    const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+    const chatContainer = document.getElementById("chat-messages");
+
+    if (!chatContainer) return;
+
+    chatContainer.innerHTML = "";
+
+    messages.forEach(msg => {
+        const msgElement = document.createElement("div");
+        const isMe = msg.sender === currentUser;
+        msgElement.className = `message ${isMe ? 'sent' : 'received'}`;
+        msgElement.textContent = msg.text;
+        chatContainer.appendChild(msgElement);
+    });
+    // Auto-scroll to the newest message at the bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+        
+  // Open Chat window
+function openPrivateChat(userId, username) {
     currentChatTarget = { id: userId, name: username };
     
-    document.getElementById("chat-target-name").textContent = `Chatting with ${username}`;
-    document.getElementById("private-chat").classList.remove("hidden");
-    document.getElementById("chat-messages").innerHTML = "";
-  }
+    const targetHeader = document.getElementById("chat-target-name");
+    const chatWindow = document.getElementById("private-chat");
+
+    if (targetHeader) targetHeader.textContent = `Chatting with ${username}`;
+    if (chatWindow) chatWindow.classList.remove("hidden");
+
+    loadPrivateMessages();
+}
 
   function closePrivateChat() {
     currentChatTarget = null;
@@ -1957,26 +1993,60 @@ function showToast(message, durationSeconds = 4) {
     }
   }
 
-  function sendPrivateMessage() {
+function sendPrivateMessage() {
     const input = document.getElementById("chat-input");
-    const messageText = input.value.trim();
-    
-    if (!messageText || !currentChatTarget) return;
+    if (!input || !currentChatTarget) return;
 
-    const chatMessages = document.getElementById("chat-messages");
-    const msgElement = document.createElement("div");
-    msgElement.className = "message sent";
-    msgElement.textContent = messageText;
-    chatMessages.appendChild(msgElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const messageText = input.value.trim();
+    if (!messageText) return;
+
+    const chatKey = getPrivateChatKey(currentUser, currentChatTarget.name);
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+
+    const newMessage = {
+        sender: currentUser,
+        receiver: currentChatTarget.name,
+        text: messageText,
+        time: Date.now()
+    };
+
+    messages.push(newMessage);
+
+    // Save to LocalStorage (This triggers the 'storage' event in other tabs)
+    localStorage.setItem(chatKey, JSON.stringify(messages));
 
     input.value = "";
+    loadPrivateMessages();
+}
 
-    // Simulates sending a notification if the other player isn't in the chat window
-    setTimeout(() => {
-      showToast(`New Message sent to ${currentChatTarget.name}`);
-    }, 500);
-  }
+        // Listen for changes made in other tabs
+window.addEventListener("storage", (event) => {
+    // 1. Check if Global Chat was updated
+    if (event.key === "gamehub_global_chat") {
+        loadGlobalMessages();
+    }
+
+    // 2. Check if a Private Chat was updated
+    if (event.key && event.key.startsWith("gamehub_chat_")) {
+        const messages = JSON.parse(event.newValue) || [];
+        if (messages.length === 0) return;
+
+        const lastMessage = messages[messages.length - 1];
+
+        // If the message was sent to ME from someone else
+        if (lastMessage.receiver === currentUser && lastMessage.sender !== currentUser) {
+            
+            // If we are currently chatting with this sender, update the chat view live
+            if (currentChatTarget && currentChatTarget.name === lastMessage.sender) {
+                loadPrivateMessages();
+            } else {
+                // If the chat window isn't open for them, pop up a toast notification
+                showToast(`New message from ${lastMessage.sender}: "${lastMessage.text}"`);
+            }
+        }
+    }
+});
+        
 </script>
 
 </body>
